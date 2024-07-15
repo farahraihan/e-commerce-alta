@@ -1,15 +1,15 @@
 package main
 
-// import (
-// 	"TokoGadget/internal/factory"
+import (
+	"TokoGadget/internal/factory"
 
-// 	"github.com/labstack/echo/v4"
-// )
+	"github.com/labstack/echo/v4"
+)
 
-// func main() {
-// 	e := echo.New()
+func main() {
+	e := echo.New()
 
-// 	factory.InitFactory(e)
+	factory.InitFactory(e)
 
-// 	e.Logger.Error(e.Start(":8000"))
-// }
+	e.Logger.Error(e.Start(":8000"))
+}

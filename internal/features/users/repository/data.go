@@ -4,6 +4,7 @@ import (
 	"TokoGadget/internal/features/products"
 	"TokoGadget/internal/features/sales"
 	"TokoGadget/internal/features/transactions"
+	"TokoGadget/internal/features/users"
 
 	"gorm.io/gorm"
 )
@@ -22,14 +23,22 @@ type User struct {
 	buyers         []sales.Sales              `gorm:"foreignKey:BuyerID"`
 }
 
-// func (u *User) toUserEntity() users.User {
-// 	return users.User{
-// 		ID:             u.ID,
-// 		Fullname:       u.Fullname,
-// 		Password:       u.Password,
-// 		Email:          u.Email,
-// 		PhoneNumber:    u.PhoneNumber,
-// 		Address:        u.Address,
-// 		ProfilePicture: u.ProfilePicture,
-// 	}
-// }
+func (u *User) toUserEntity() users.User {
+	return users.User{
+		ID:             u.ID,
+		Fullname:       u.Fullname,
+		Password:       u.Password,
+		Email:          u.Email,
+		PhoneNumber:    u.PhoneNumber,
+		Address:        u.Address,
+		ProfilePicture: u.ProfilePicture,
+	}
+}
+
+func toUserRegis(input users.User) User {
+	return User{
+		Fullname:   input.Fullname,
+		Email:    	input.Email,
+		Password: 	input.Password,
+	}
+}
