@@ -8,5 +8,6 @@ import (
 
 func InitRoute(e *echo.Echo, uc users.Handler) {
 	e.POST("/register", uc.Register())
+	e.POST("/login", uc.Login())
 }
 

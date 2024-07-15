@@ -40,3 +40,26 @@ func (uc *UserController) Register() echo.HandlerFunc {
 		return c.JSON(201, helper.ResponseFormat(201, "success insert data", nil))
 	}
 }
+
+func (uc *UserController) Login() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var input LoginRequest
+		err := c.Bind(&input)
+		if err != nil {
+			c.Logger().Error("login parse error:", err.Error())
+			return c.JSON(400, helper.ResponseFormat(400, "input error", nil))
+		}
+
+		result, token, err := uc.srv.Login(input.Email, input.Password)
+
+		if err != nil {
+			errCode := 500
+			if strings.ContainsAny(err.Error(), "tidak ditemukan") {
+				errCode = 400
+			}
+			return c.JSON(errCode, helper.ResponseFormat(errCode, err.Error(), nil))
+		}
+
+		return c.JSON(200, helper.ResponseFormat(200, "success login", ToLoginReponse(result, token)))
+	}
+}

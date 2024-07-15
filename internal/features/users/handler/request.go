@@ -17,3 +17,8 @@ func ToModelUsers(r RegisterRequest) users.User {
 		Email:    r.Email,
 	}
 }
+
+type LoginRequest struct {
+	Email    string `json:"email" form:"email"`
+	Password string `json:"password" form:"password"`
+}

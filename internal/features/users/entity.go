@@ -16,12 +16,20 @@ type User struct {
 
 type Handler interface {
 	Register() echo.HandlerFunc
+	Login() echo.HandlerFunc
 }
 
 type Services interface {
 	Register(newUser User) error
+	Login(email string, password string) (User, string, error)
 }
 
 type Query interface {
 	Register(newUser User) error
+	Login(email string) (User, error)
+}
+
+type LoginValidate struct {
+	Email    string `validate:"required,email"`
+	Password string `validate:"required,min=6,alphanum"`
 }

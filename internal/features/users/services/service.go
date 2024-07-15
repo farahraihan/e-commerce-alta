@@ -7,6 +7,9 @@ import (
 	"log"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserServices struct {
@@ -40,3 +43,43 @@ func (us *UserServices) Register(newData users.User) error {
 
 	return nil
 }
+
+func (us *UserServices) Login(email string, password string) (users.User, string, error) {
+	err := us.validate.Struct(&users.LoginValidate{Email: email, Password: password})
+	msg := "terjadi kesalahan pada server"
+
+	if err != nil {
+		log.Println("login validation error", err.Error())
+		return users.User{}, "", errors.New("validasi tidak sesuai")
+	}
+
+	result, err := us.qry.Login(email)
+	if err != nil {
+		log.Println("login sql error:", err.Error())
+		if err.Error() == gorm.ErrRecordNotFound.Error() {
+			msg = "data tidak ditemukan"
+		}
+		return users.User{}, "", errors.New(msg)
+	}
+
+	err = utils.CheckPassword([]byte(password), []byte(result.Password))
+	if err != nil {
+		log.Println("login hash error:", err.Error())
+		if err.Error() == bcrypt.ErrMismatchedHashAndPassword.Error() {
+			msg = "data tidak ditemukan"
+		}
+		return users.User{}, "", errors.New(msg)
+	}
+
+	token, err := utils.GenerateToken(result.ID)
+	if err != nil {
+		log.Println("login jwt error:", err.Error())
+		if err.Error() == jwt.ErrTokenMalformed.Error() {
+			msg = "data tidak dapat diproses"
+		}
+		return users.User{}, "", errors.New(msg)
+	}
+
+	return result, token, nil
+}
+
