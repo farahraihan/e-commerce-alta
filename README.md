@@ -54,7 +54,7 @@ go run main.go
 
 ## Testing api:
 ```
-open insomnia
+open insomnia or postman
 add htpp request
 select method POST 
 testing api, for example:
