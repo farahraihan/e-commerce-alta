@@ -108,4 +108,12 @@ func (us *UserServices) GetProfile(userid uint) (*users.User, error) {
 	return profile, nil
 }
 
+func (us *UserServices) DeleteAccount(userid uint) error {
+	err := us.qry.DeleteAccount(userid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 

@@ -19,6 +19,7 @@ type Handler interface {
 	Login() echo.HandlerFunc
 	Update(c echo.Context) error
 	GetProfile(c echo.Context) error
+	Delete(c echo.Context) error 
 }
 
 type Services interface {
@@ -26,6 +27,7 @@ type Services interface {
 	Login(email string, password string) (User, string, error)
 	UpdateProfile(userid uint, accounts User) error
 	GetProfile(userid uint) (*User, error)
+	DeleteAccount(userid uint) error
 }
 
 type Query interface {
@@ -33,6 +35,7 @@ type Query interface {
 	Login(email string) (User, error)
 	UpdateAccount(userID uint, account User) error
 	GetAccountByID(userid uint) (*User, error)	
+	DeleteAccount(userid uint) error
 }
 
 type LoginValidate struct {

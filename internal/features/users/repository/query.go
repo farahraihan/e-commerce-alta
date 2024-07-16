@@ -69,3 +69,10 @@ func (um *UserModel) GetAccountByID(userid uint) (*users.User, error) {
 	return &user, nil
 }
 
+func (um *UserModel) DeleteAccount(userid uint) error {
+	tx := um.db.Delete(&User{}, userid)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}

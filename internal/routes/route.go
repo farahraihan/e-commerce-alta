@@ -21,6 +21,12 @@ func InitRoute(e *echo.Echo, uc users.Handler) {
 			SigningKey:    []byte("passkeyJWT"),
 			SigningMethod: jwt.SigningMethodHS256.Name,
 		}))
+	e.DELETE("/users", uc.Delete, echojwt.WithConfig(
+		echojwt.Config{
+			SigningKey:    []byte("passkeyJWT"),
+			SigningMethod: jwt.SigningMethodHS256.Name,
+		}))
+	
 }
 // func setRoute(e *echo.Echo) {
 // 	t := e.Group("/users")

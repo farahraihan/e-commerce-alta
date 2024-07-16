@@ -137,4 +137,17 @@ func (uc *UserController) GetProfile(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Get user profile successful", userResponse))
 }
 
+func (uc *UserController) Delete(c echo.Context) error {
+	token := c.Get("user").(*jwt.Token)
+	userID := utils.DecodeToken(token)
+	if userID == 0 {
+		return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized,"Unauthorized", "error"))
+	}
+
+	if errDelete := uc.srv.DeleteAccount(uint(userID)); errDelete != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ResponseFormatNonData(http.StatusInternalServerError, "Failed to deleted account: "+errDelete.Error(), "Failed"))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseFormatNonData(http.StatusOK, "Succesfully deleted account", "Success"))
+}
 
