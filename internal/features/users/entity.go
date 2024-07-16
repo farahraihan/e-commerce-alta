@@ -17,16 +17,22 @@ type User struct {
 type Handler interface {
 	Register() echo.HandlerFunc
 	Login() echo.HandlerFunc
+	Update(c echo.Context) error
+	GetProfile(c echo.Context) error
 }
 
 type Services interface {
 	Register(newUser User) error
 	Login(email string, password string) (User, string, error)
+	UpdateProfile(userid uint, accounts User) error
+	GetProfile(userid uint) (*User, error)
 }
 
 type Query interface {
 	Register(newUser User) error
 	Login(email string) (User, error)
+	UpdateAccount(userID uint, account User) error
+	GetAccountByID(userid uint) (*User, error)	
 }
 
 type LoginValidate struct {

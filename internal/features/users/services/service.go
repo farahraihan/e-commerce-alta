@@ -83,3 +83,29 @@ func (us *UserServices) Login(email string, password string) (users.User, string
 	return result, token, nil
 }
 
+
+// UpdateProfile implements users.ServiceUserInterface.
+func (us *UserServices) UpdateProfile(userid uint, accounts users.User) error {
+	if accounts.Fullname == "" || accounts.Email == "" || accounts.Password == "" || accounts.PhoneNumber == "" || accounts.Address == "" {
+		return errors.New("[validation] nama/email/password/phone/address tidak boleh kosong")
+	}
+
+	// proses hash password
+	pass, err := utils.GeneratePassword(accounts.Password)
+	if err != nil {
+		log.Println("register generate password error:", err.Error())
+		return errors.New("input data tidak valid, data tidak bisa diproses")
+	}
+	accounts.Password = string(pass)
+	return us.qry.UpdateAccount(userid, accounts)
+}
+
+func (us *UserServices) GetProfile(userid uint) (*users.User, error) {
+	profile, err := us.qry.GetAccountByID(userid)
+	if err != nil {
+		return nil, err
+	}
+	return profile, nil
+}
+
+
