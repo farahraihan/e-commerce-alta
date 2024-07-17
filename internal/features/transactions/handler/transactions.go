@@ -29,7 +29,10 @@ func (th *TransactionHandler) Checkout(c echo.Context) error {
 		return c.JSON(400, helper.ResponseFormat(400, "Input Error!", nil))
 	}
 
-	err = th.srv.Checkout(orderID)
+	status, err := th.srv.Checkout(orderID)
+	if !status {
+		return c.JSON(400, helper.ResponseFormat(400, "Not enough stock!", nil))
+	}
 	if err != nil {
 		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil))
 	}

@@ -24,7 +24,7 @@ func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
 	c.POST("", dth.AddToCart)
 	c.GET("", dth.GetAllCart)
 	c.PUT("", dth.UpdateCart)
-	c.DELETE("/:cart_id", dth.DeleteCart)
+	c.DELETE("", dth.DeleteCart)
 
 	t := e.Group("/transaction")
 	t.Use(JWTConfig())

@@ -25,7 +25,7 @@ func (tu *tokenUtility) GenerateToken(userID uint) (string, error) {
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 
 	var process = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	result, err := process.SignedString(configs.ImportPasskey())
+	result, err := process.SignedString([]byte(configs.ImportPasskey()))
 	if err != nil {
 		return "", err
 	}

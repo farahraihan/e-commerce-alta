@@ -46,6 +46,7 @@ func (tq *TransactionQuery) CheckStock(transactionID uint) ([]transactions.Check
 	query := tq.db.Raw("SELECT dt.id AS cart_id, dt.quantity, p.stock FROM detail_transactions AS dt JOIN products AS p ON p.id = dt.product_id WHERE transaction_id = ?", transactionID)
 	query.Scan(&stock)
 
+	// Stok mencukupi = true, tidak cukup = false
 	for _, val := range stock {
 		if val.Quantity > val.Stock {
 			return []transactions.CheckStock{}, false

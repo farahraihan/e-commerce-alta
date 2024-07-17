@@ -18,8 +18,11 @@ type Transaction struct {
 
 func ToEntityTransaction(input Transaction) t_entity.Transaction {
 	return t_entity.Transaction{
-		ID:     input.ID,
-		UserID: input.UserID,
-		Status: input.Status,
+		ID:        input.ID,
+		UserID:    input.UserID,
+		Status:    input.Status,
+		CreatedAt: input.CreatedAt,
+		UpdatedAt: input.UpdatedAt,
+		DeletedAt: input.DeletedAt.Time,
 	}
 }

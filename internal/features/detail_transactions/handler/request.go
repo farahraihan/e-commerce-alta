@@ -1,6 +1,7 @@
 package handler
 
 type RequestCart struct {
-	CartID   uint `json:"cart_id"`
-	Quantity uint `json:"quantity"`
+	ProductID uint `json:"product_id"`
+	CartID    uint `json:"cart_id"`
+	Quantity  uint `json:"quantity"`
 }

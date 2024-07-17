@@ -1,11 +1,18 @@
 package transactions
 
-import "github.com/labstack/echo/v4"
+import (
+	"time"
+
+	"github.com/labstack/echo/v4"
+)
 
 type Transaction struct {
-	ID     uint
-	UserID uint
-	Status string
+	ID        uint
+	UserID    uint
+	Status    string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time
 }
 
 type CheckStock struct {
@@ -23,7 +30,7 @@ type THandler interface {
 }
 
 type TServices interface {
-	Checkout(uint) error
+	Checkout(uint) (bool, error)
 	GetAllTransactions(uint) ([]Transaction, error)
 	GetTransaction(uint) (Transaction, error)
 	DeleteTransaction(uint) error

@@ -14,8 +14,18 @@ func NewTransactionServices(q t_entity.TQuery) t_entity.TServices {
 	}
 }
 
-func (ts *TransactionServices) Checkout(transactionID uint) error {
-	return ts.qry.Checkout(transactionID)
+func (ts *TransactionServices) Checkout(transactionID uint) (bool, error) {
+	result, status := ts.qry.CheckStock(transactionID)
+	if !status {
+		return false, nil
+	}
+
+	err := ts.qry.UpdateStock(result)
+	if err != nil {
+		return false, nil
+	}
+
+	return true, ts.qry.Checkout(transactionID)
 }
 
 func (ts *TransactionServices) GetAllTransactions(userID uint) ([]t_entity.Transaction, error) {
@@ -27,5 +37,11 @@ func (ts *TransactionServices) GetTransaction(transactionID uint) (t_entity.Tran
 }
 
 func (ts *TransactionServices) DeleteTransaction(transactionID uint) error {
+	result, _ := ts.qry.CheckStock(transactionID)
+	err := ts.qry.RevertStock(result)
+	if err != nil {
+		return err
+	}
+
 	return ts.qry.DeleteTransaction(transactionID)
 }
