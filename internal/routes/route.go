@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"TokoGadget/internal/features/products"
 	"TokoGadget/internal/features/users"
 
 	"github.com/golang-jwt/jwt"
@@ -8,7 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func InitRoute(e *echo.Echo, uc users.Handler) {
+func InitRoute(e *echo.Echo, uc users.Handler, pc products.PHandler) {
+	// Routes for users
 	e.POST("/register", uc.Register())
 	e.POST("/login", uc.Login())
 	e.PUT("/users", uc.Update, echojwt.WithConfig(
@@ -26,15 +28,14 @@ func InitRoute(e *echo.Echo, uc users.Handler) {
 			SigningKey:    []byte("passkeyJWT"),
 			SigningMethod: jwt.SigningMethodHS256.Name,
 		}))
-	
-}
-// func setRoute(e *echo.Echo) {
-// 	t := e.Group("/users")
-// 	t.Use(echojwt.WithConfig(
-// 		echojwt.Config{
-// 			SigningKey:    []byte("passkeyJWT"),
-// 			SigningMethod: jwt.SigningMethodHS256.Name,
-// 		},
-// 	))
-// }
 
+	// Routes for products
+	productGroup := e.Group("/products")
+	productGroup.Use(echojwt.JWT([]byte("passkeyJWT"))) // Middleware JWT untuk produk
+
+	productGroup.POST("", pc.AddProduct())
+	productGroup.GET("", pc.GetAllProducts())
+	productGroup.GET("/:product_id", pc.GetProductByID())
+	productGroup.PUT("/:product_id", pc.UpdateProductByID())
+	productGroup.DELETE("/:product_id", pc.DeleteProduct())
+}

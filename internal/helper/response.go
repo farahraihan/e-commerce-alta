@@ -18,3 +18,13 @@ func ResponseFormatNonData(code int, message string, status string) map[string]a
 	result["message"] = message
 	return result
 }
+
+func ResponseFormatWithMeta(status string, code int, message string, data interface{}, meta interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"status":  status,
+		"code":    code,
+		"message": message,
+		"data":    data,
+		"meta":    meta,
+	}
+}

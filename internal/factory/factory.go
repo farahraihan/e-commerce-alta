@@ -9,9 +9,9 @@ import (
 	"TokoGadget/internal/features/users/services"
 
 	//Product
-	// "TokoGadget/internal/features/products/handler"
-	product "TokoGadget/internal/features/products/repository"
-	// "TokoGadget/internal/features/products/services"
+	productHandler "TokoGadget/internal/features/products/handler"
+	productRepository "TokoGadget/internal/features/products/repository"
+	productServices "TokoGadget/internal/features/products/services"
 
 	// transaction
 	transaction "TokoGadget/internal/features/transactions/repository"
@@ -19,7 +19,6 @@ import (
 	// detail transaction
 	detailTransaction "TokoGadget/internal/features/detail_transactions/repository"
 
-	
 	"TokoGadget/internal/routes"
 
 	"github.com/labstack/echo/v4"
@@ -29,10 +28,14 @@ import (
 func InitFactory(e *echo.Echo) {
 	cfg := configs.ImportSetting()
 	db, _ := configs.ConnectDB(cfg)
-	db.AutoMigrate(&repository.User{}, &product.Product{}, &transaction.Transaction{}, &detailTransaction.DetailTransaction{})
+	db.AutoMigrate(&repository.User{}, &productRepository.Product{}, &transaction.Transaction{}, &detailTransaction.DetailTransaction{})
 	um := repository.NewUserModel(db)
 	us := services.NewUserService(um)
 	uc := handler.NewUserController(us)
+
+	pm := productRepository.NewProductModel(db)
+	ps := productServices.NewProductService(pm)
+	pc := productHandler.NewProductController(ps)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
@@ -42,5 +45,5 @@ func InitFactory(e *echo.Echo) {
 	// t.GET("", tc.ShowMyTodo())
 	// t.POST("", tc.CreateTodo())
 
-	routes.InitRoute(e, uc)
+	routes.InitRoute(e, uc, pc)
 }

@@ -22,6 +22,7 @@ func (um *UserModel) Register(newUser users.User) error {
 	// err := um.db.Create(&newUser).Error
 	return err
 }
+
 func (um *UserModel) Login(email string) (users.User, error) {
 	var result User
 	err := um.db.Where("email = ?", email).First(&result).Error
