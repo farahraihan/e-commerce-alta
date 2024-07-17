@@ -11,5 +11,5 @@ func main() {
 
 	factory.InitFactory(e)
 
-	e.Logger.Error(e.StartAutoTLS(":8000"))
+	e.Logger.Fatal(e.StartAutoTLS(":8000"))
 }
