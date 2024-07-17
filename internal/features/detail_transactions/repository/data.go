@@ -8,8 +8,8 @@ import (
 
 type DetailTransaction struct {
 	gorm.Model
-	ProductID     uint             `json:"product_id"`
+	ProductID     uint
+	TransactionID uint
+	Quantity      uint
 	Product       products.Product `gorm:"foreignKey:ProductID"`
-	TransactionID uint             `json:"transaction_id"`
-	Quantity      uint             `json:"quantity"`
 }

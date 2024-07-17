@@ -18,6 +18,16 @@ type setting struct {
 	DBNAME   string
 }
 
+func ImportPasskey() string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return os.Getenv("passkey")
+}
+
 func ImportSetting() setting {
 	var result setting
 	err := godotenv.Load(".env")
@@ -36,7 +46,7 @@ func ConnectDB(s setting) (*gorm.DB, error) {
 	var connStr = fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s", s.Host, s.User, s.Password, s.Port, s.DBNAME)
 	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "tokogadget.",
+			TablePrefix: "public.",
 		},
 	})
 
