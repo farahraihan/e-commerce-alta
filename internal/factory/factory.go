@@ -2,6 +2,7 @@ package factory
 
 import (
 	"TokoGadget/configs"
+	"net/http"
 
 	// users
 	"TokoGadget/internal/features/users/handler"
@@ -19,11 +20,11 @@ import (
 	// detail transaction
 	detailTransaction "TokoGadget/internal/features/detail_transactions/repository"
 
-	
 	"TokoGadget/internal/routes"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func InitFactory(e *echo.Echo) {
@@ -37,10 +38,15 @@ func InitFactory(e *echo.Echo) {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 
-	// Register
-
-	// t.GET("", tc.ShowMyTodo())
-	// t.POST("", tc.CreateTodo())
+	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+	e.Use(middleware.Recover())
+	e.Use(middleware.Logger())
+	e.GET("/", func(c echo.Context) error {
+		return c.HTML(http.StatusOK, `
+			<h1>Welcome to Echo!</h1>
+			<h3>TLS certificates automatically installed from Let's Encrypt :)</h3>
+		`)
+	})
 
 	routes.InitRoute(e, uc)
 }
