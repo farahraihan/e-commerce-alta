@@ -33,7 +33,7 @@ func InitFactory(e *echo.Echo) {
 
 	um := u_qry.NewUserModel(db)
 	us := u_srv.NewUserService(um, pu, tu)
-	uc := u_hnd.NewUserController(us)
+	uc := u_hnd.NewUserController(us, tu)
 
 	// pm := u_qry.NewProductModel(db)
 	// ps := u_srv.NewProductService(pm)
@@ -50,10 +50,15 @@ func InitFactory(e *echo.Echo) {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 
-	// Register
-
-	// t.GET("", tc.ShowMyTodo())
-	// t.POST("", tc.CreateTodo())
+	// e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+	// e.Use(middleware.Recover())
+	// e.Use(middleware.Logger())
+	// e.GET("/", func(c echo.Context) error {
+	// 	return c.HTML(http.StatusOK, `
+	// 		<h1>Welcome to Echo!</h1>
+	// 		<h3>TLS certificates automatically installed from Let's Encrypt :)</h3>
+	// 	`)
+	// })
 
 	routes.InitRoute(e, uc, th, dth)
 }

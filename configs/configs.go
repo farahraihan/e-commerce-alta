@@ -7,7 +7,6 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 type setting struct {
@@ -44,15 +43,9 @@ func ImportSetting() setting {
 
 func ConnectDB(s setting) (*gorm.DB, error) {
 	var connStr = fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s", s.Host, s.User, s.Password, s.Port, s.DBNAME)
-	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "public.",
-		},
-	})
-
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		panic("failed to connect to database: " + err.Error())
 	}
-
 	return db, nil
 }

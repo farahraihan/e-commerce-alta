@@ -28,10 +28,10 @@ func (dth *DetailTransactionHandler) GetAllCart(c echo.Context) error {
 
 	transaction, cart, err := dth.srv.GetAllCart(uint(userID))
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
+		return c.JSON(500, helper.ResponseFormat("Failed!", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat(200, "Shopping Cart datas successfully retreived!", ToCartResponse(transaction, cart), nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed!", 200, "Shopping Cart datas successfully retreived!", ToCartResponse(transaction, cart), nil))
 }
 
 func (dth *DetailTransactionHandler) AddToCart(c echo.Context) error {
@@ -41,15 +41,15 @@ func (dth *DetailTransactionHandler) AddToCart(c echo.Context) error {
 	var input RequestCart
 	err := c.Bind(&input)
 	if err != nil {
-		return c.JSON(400, helper.ResponseFormat(400, "Input Error!", nil, nil))
+		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Input Error!", nil, nil))
 	}
 
 	err = dth.srv.AddToCart(input.ProductID, userID)
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
+		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(201, helper.ResponseFormat(201, "Product successfully added to Shopping Cart!", nil, nil))
+	return c.JSON(201, helper.ResponseFormat("Succeed", 201, "Product successfully added to Shopping Cart!", nil, nil))
 }
 
 func (dth *DetailTransactionHandler) UpdateCart(c echo.Context) error {
@@ -57,18 +57,18 @@ func (dth *DetailTransactionHandler) UpdateCart(c echo.Context) error {
 	var input RequestCart
 	err := c.Bind(&input)
 	if err != nil {
-		return c.JSON(400, helper.ResponseFormat(400, "Input Error!", nil, nil))
+		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Input Error!", nil, nil))
 	}
 
 	status, err := dth.srv.UpdateCart(input.CartID, input.Quantity)
 	if !status {
-		return c.JSON(400, helper.ResponseFormat(400, "Not enough stock!", nil, nil))
+		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Not enough stock!", nil, nil))
 	}
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
+		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat(200, "Shopping Cart item quantity successfully updated!", nil, nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed", 200, "Shopping Cart item quantity successfully updated!", nil, nil))
 }
 
 func (dth *DetailTransactionHandler) DeleteCart(c echo.Context) error {
@@ -77,8 +77,8 @@ func (dth *DetailTransactionHandler) DeleteCart(c echo.Context) error {
 
 	err := dth.srv.DeleteCart(uint(cartID))
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
+		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat(201, "Shopping Cart item successfully deleted!", nil, nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed", 201, "Shopping Cart item successfully deleted!", nil, nil))
 }

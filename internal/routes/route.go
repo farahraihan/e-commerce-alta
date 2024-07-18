@@ -16,7 +16,33 @@ func InitRoute(e *echo.Echo, uc u_hnd.Handler, th t_hnd.THandler, dth dt_hnd.DTH
 	e.POST("/login", uc.Login())
 
 	TransactionsRoute(e, th, dth)
+	e.PUT("/users", uc.Update, echojwt.WithConfig(
+		echojwt.Config{
+			SigningKey:    []byte("passkeyJWT"),
+			SigningMethod: jwt.SigningMethodHS256.Name,
+		}))
+	e.GET("/users", uc.GetProfile, echojwt.WithConfig(
+		echojwt.Config{
+			SigningKey:    []byte("passkeyJWT"),
+			SigningMethod: jwt.SigningMethodHS256.Name,
+		}))
+	e.DELETE("/users", uc.Delete, echojwt.WithConfig(
+		echojwt.Config{
+			SigningKey:    []byte("passkeyJWT"),
+			SigningMethod: jwt.SigningMethodHS256.Name,
+		}))
+
 }
+
+// func setRoute(e *echo.Echo) {
+// 	t := e.Group("/users")
+// 	t.Use(echojwt.WithConfig(
+// 		echojwt.Config{
+// 			SigningKey:    []byte("passkeyJWT"),
+// 			SigningMethod: jwt.SigningMethodHS256.Name,
+// 		},
+// 	))
+// }
 
 func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
 	c := e.Group("/cart")
