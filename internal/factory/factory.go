@@ -34,7 +34,7 @@ func InitFactory(e *echo.Echo) {
 	uc := handler.NewUserController(us)
 
 	pm := productRepository.NewProductModel(db)
-	ps := productServices.NewProductService(pm)
+	ps := productServices.NewProductService(pm, um)
 	pc := productHandler.NewProductController(ps)
 
 	e.Pre(middleware.RemoveTrailingSlash())

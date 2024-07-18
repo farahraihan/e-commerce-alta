@@ -1,6 +1,7 @@
 package products
 
 import (
+	"TokoGadget/internal/features/users"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -10,6 +11,7 @@ import (
 type Product struct {
 	ID             uint
 	UserID         uint
+	User           users.User
 	ProductName    string
 	Category       string
 	Description    string
@@ -31,20 +33,22 @@ type PHandler interface {
 
 type PServices interface {
 	AddProduct(newProduct Product) error
-	GetAllProducts() ([]Product, error)
-	GetAllProductsByUserID(user_id uint) ([]Product, error)
-	GetProductByID(id uint) (*Product, error)
+	GetAllProducts(term string, limit int, offset int) ([]Product, error)
+	GetProductsByUserID(user_id uint, term string, limit int, offset int) ([]Product, error)
+	GetProductByID(id uint) (Product, users.User, error)
 	UpdateProductByID(id uint, updatedProduct Product) error
 	DeleteProduct(id uint) error
-	GetProductsBySearch(search string) ([]Product, error)
+	CountAllProducts(term string) (int64, error)
+	CountProductsByUserID(userID uint, term string) (int64, error)
 }
 
 type PQuery interface {
 	AddProduct(newProduct Product) error
-	GetAllProducts() ([]Product, error)
-	GetAllProductsByUserID(user_id uint) ([]Product, error)
-	GetProductByID(id uint) (*Product, error)
+	GetAllProducts(term string, limit int, offset int) ([]Product, error)
+	GetProductsByUserID(user_id uint, term string, limit int, offset int) ([]Product, error)
+	GetProductByID(id uint) (Product, users.User, error)
 	UpdateProductByID(id uint, updatedProduct Product) error
 	DeleteProduct(id uint) error
-	GetProductsBySearch(search string) ([]Product, error)
+	CountAllProducts(term string) (int64, error)
+	CountProductsByUserID(userID uint, term string) (int64, error)
 }

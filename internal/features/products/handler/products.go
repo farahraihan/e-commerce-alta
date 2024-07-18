@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"TokoGadget/configs"
 	"TokoGadget/internal/features/products"
 	"TokoGadget/internal/helper"
+	"math"
 	"net/http"
 	"strconv"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
@@ -27,13 +30,51 @@ func (pc *ProductController) AddProduct() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
 		}
 
+		// Get image from form data
+		image, err := c.FormFile("product_picture")
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid image file", nil))
+		}
+
+		// Open the image file
+		src, err := image.Open()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to open image file", nil))
+		}
+		defer src.Close()
+
+		// Upload image to Cloudinary
+		cld, err := configs.ConnectCloudinary()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Cloudinary configuration error", nil))
+		}
+
+		uploadResult, err := cld.Upload.Upload(c.Request().Context(), src, uploader.UploadParams{})
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to upload image", nil))
+		}
+
+		imageURL := uploadResult.SecureURL
+
+		// Bind the request
 		var req CreateOrUpdateProductRequest
-		err := c.Bind(&req)
+		err = c.Bind(&req)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid request body", nil))
 		}
 
-		newProduct := ToModelProduct(req, userID)
+		// Convert request to product model
+		newProduct := products.Product{
+			UserID:         userID,
+			ProductName:    req.ProductName,
+			Category:       req.Category,
+			Description:    req.Description,
+			Price:          req.Price,
+			Stock:          req.Stock,
+			ProductPicture: imageURL,
+		}
+
+		// Add product to database
 		err = pc.srv.AddProduct(newProduct)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to add product", nil))
@@ -49,7 +90,10 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 
 		// Membaca parameter dari query string
 		pageStr := c.QueryParam("page")
-		page, _ := strconv.Atoi(pageStr) // konversi ke integer, default: 0
+		page, err := strconv.Atoi(pageStr)
+		if err != nil || page < 1 {
+			page = 1
+		}
 
 		allStr := c.QueryParam("all")
 		all, _ := strconv.ParseBool(allStr) // konversi ke boolean, default: false
@@ -61,27 +105,39 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
 		}
 
+		limit := 10
+		offset := (page - 1) * limit
+
 		// Panggil layanan untuk mengambil produk
 		var products []products.Product
+		var totalItems int64
 		if all {
-			products, err = pc.srv.GetAllProducts()
+			products, err = pc.srv.GetAllProducts(search, limit, offset)
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil))
+			}
+			totalItems, err = pc.srv.CountAllProducts(search)
 		} else {
-			// Jika tidak meminta semua produk, gunakan pencarian
-			products, err = pc.srv.GetProductsBySearch(search)
+			products, err = pc.srv.GetProductsByUserID(userID, search, limit, offset)
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil))
+			}
+			totalItems, err = pc.srv.CountProductsByUserID(userID, search)
 		}
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve total product count", nil))
 		}
 
 		// Konversi ke response format yang diinginkan
 		response := ToResponseProducts(products)
 
-		// Menambahkan metadata, misalnya jumlah total item, halaman saat ini, dll.
+		totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
+
 		meta := map[string]interface{}{
-			"totalItems":   len(products),
-			"itemsPerPage": 10, // misalnya 10 item per halaman
-			"currentPage":  page + 1,
-			// totalPages bisa dihitung berdasarkan totalItems dan itemsPerPage
+			"totalItems":   totalItems,
+			"itemsPerPage": limit,
+			"currentPage":  page,
+			"totalPages":   totalPages,
 		}
 
 		// Mengembalikan response JSON dengan meta data
@@ -98,17 +154,18 @@ func (pc *ProductController) GetProductByID() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil))
 		}
 
-		userID := getUserIDFromToken(c) // Get user ID from token
-		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
-		}
-
-		product, err := pc.srv.GetProductByID(uint(id))
+		product, user, err := pc.srv.GetProductByID(uint(id))
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil))
 		}
 
-		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Product data fetched successfully", ToResponseProduct(*product)))
+		response := map[string]interface{}{
+			"product":    ToResponseProduct(product),
+			"sellerID":   user.ID,
+			"sellerName": user.Fullname,
+		}
+
+		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Product data fetched successfully", response))
 	}
 }
 
