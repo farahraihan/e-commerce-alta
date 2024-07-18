@@ -96,11 +96,11 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 		}
 
 		allStr := c.QueryParam("all")
-		all, _ := strconv.ParseBool(allStr) // konversi ke boolean, default: false
+		all, _ := strconv.ParseBool(allStr)
 
-		search := c.QueryParam("search") // tambahan untuk pencarian
+		search := c.QueryParam("search")
 
-		userID := getUserIDFromToken(c) // Get user ID from token
+		userID := getUserIDFromToken(c)
 		if userID == 0 {
 			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
 		}

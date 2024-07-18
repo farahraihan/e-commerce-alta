@@ -1,41 +1,64 @@
 package routes
 
 import (
-	"TokoGadget/internal/features/products"
-	"TokoGadget/internal/features/users"
+	"TokoGadget/configs"
+	dt_hnd "TokoGadget/internal/features/detail_transactions"
+	p_hnd "TokoGadget/internal/features/products"
+	t_hnd "TokoGadget/internal/features/transactions"
+	u_hnd "TokoGadget/internal/features/users"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
-func InitRoute(e *echo.Echo, uc users.Handler, pc products.PHandler) {
-	// Routes for users
+func InitRoute(e *echo.Echo, uc u_hnd.Handler, th t_hnd.THandler, dth dt_hnd.DTHandler, ph p_hnd.PHandler) {
 	e.POST("/register", uc.Register())
 	e.POST("/login", uc.Login())
-	e.PUT("/users", uc.Update, echojwt.WithConfig(
-		echojwt.Config{
-			SigningKey:    []byte("passkeyJWT"),
-			SigningMethod: jwt.SigningMethodHS256.Name,
-		}))
-	e.GET("/users", uc.GetProfile, echojwt.WithConfig(
-		echojwt.Config{
-			SigningKey:    []byte("passkeyJWT"),
-			SigningMethod: jwt.SigningMethodHS256.Name,
-		}))
-	e.DELETE("/users", uc.Delete, echojwt.WithConfig(
-		echojwt.Config{
-			SigningKey:    []byte("passkeyJWT"),
-			SigningMethod: jwt.SigningMethodHS256.Name,
-		}))
 
-	// Routes for products
-	productGroup := e.Group("/products")
-	productGroup.Use(echojwt.JWT([]byte("passkeyJWT"))) // Middleware JWT untuk produk
+	UsersRoute(e, uc)
+	TransactionsRoute(e, th, dth)
+	ProductsRoute(e, ph)
+}
 
-	productGroup.POST("", pc.AddProduct())
-	productGroup.GET("", pc.GetAllProducts())
-	productGroup.GET("/:product_id", pc.GetProductByID())
-	productGroup.PUT("/:product_id", pc.UpdateProductByID())
-	productGroup.DELETE("/:product_id", pc.DeleteProduct())
+func UsersRoute(e *echo.Echo, uc u_hnd.Handler) {
+	u := e.Group("/users")
+	u.Use(JWTConfig())
+	u.PUT("", uc.Update)
+	u.GET("", uc.GetProfile)
+	u.DELETE("", uc.Delete)
+}
+
+func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
+	c := e.Group("/cart")
+	c.Use(JWTConfig())
+	c.POST("", dth.AddToCart)
+	c.GET("", dth.GetAllCart)
+	c.PUT("", dth.UpdateCart)
+	c.DELETE("", dth.DeleteCart)
+
+	t := e.Group("/transaction")
+	t.Use(JWTConfig())
+	t.GET("", th.GetAllTransactions)
+	t.PUT("/:transaction_id", th.Checkout)
+	t.GET("/:transaction_id", th.GetTransaction)
+	t.DELETE("/:transaction_id", th.DeleteTransaction)
+}
+
+func ProductsRoute(e *echo.Echo, ph p_hnd.PHandler) {
+	p := e.Group("/products")
+	p.GET("", ph.GetAllProducts())
+	p.GET("/:product_id", ph.GetProductByID())
+	p.POST("", ph.AddProduct())
+	p.PUT("/:product_id", ph.UpdateProductByID())
+	p.DELETE("/:product_id", ph.DeleteProduct())
+}
+
+func JWTConfig() echo.MiddlewareFunc {
+	return echojwt.WithConfig(
+		echojwt.Config{
+			SigningKey:    []byte(configs.ImportPasskey()),
+			SigningMethod: jwt.SigningMethodHS256.Name,
+		},
+	)
 }

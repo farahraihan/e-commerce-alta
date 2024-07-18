@@ -13,11 +13,13 @@ import (
 
 type UserController struct {
 	srv users.Services
+	tu  utils.TokenUtilityInterface
 }
 
-func NewUserController(s users.Services) users.Handler {
+func NewUserController(s users.Services, t utils.TokenUtilityInterface) users.Handler {
 	return &UserController{
 		srv: s,
+		tu:  t,
 	}
 }
 
@@ -44,7 +46,6 @@ func (uc *UserController) Register() echo.HandlerFunc {
 	}
 }
 
-
 func (uc *UserController) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var input LoginRequest
@@ -61,17 +62,16 @@ func (uc *UserController) Login() echo.HandlerFunc {
 			if strings.ContainsAny(err.Error(), "tidak ditemukan") {
 				errCode = 400
 			}
-			return c.JSON(errCode, helper.ResponseFormat("error",errCode, err.Error(), nil))
+			return c.JSON(errCode, helper.ResponseFormat("error", errCode, err.Error(), nil, nil))
 		}
 
-		return c.JSON(200, helper.ResponseFormat("success", 200, "user login successful", ToLoginReponse(result, token)))
+		return c.JSON(200, helper.ResponseFormat("success", 200, "user login successful", ToLoginReponse(result, token), nil))
 	}
 }
 
-
 func (uc *UserController) Update(c echo.Context) error {
 	token := c.Get("user").(*jwt.Token)
-	userID := utils.DecodeToken(token)
+	userID := uc.tu.DecodeToken(token)
 
 	if userID == 0 {
 		return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
@@ -121,7 +121,7 @@ func (uc *UserController) Update(c echo.Context) error {
 
 func (uc *UserController) GetProfile(c echo.Context) error {
 	token := c.Get("user").(*jwt.Token)
-	userID := utils.DecodeToken(token)
+	userID := uc.tu.DecodeToken(token)
 	if userID == 0 {
 		return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 	}
@@ -134,14 +134,14 @@ func (uc *UserController) GetProfile(c echo.Context) error {
 	// Mengonversi *users.User menjadi users.User menggunakan dereference (*)
 	userResponse := ToGetUserResponse(*profile)
 
-	return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Get user profile successful", userResponse))
+	return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Get user profile successful", userResponse, nil))
 }
 
 func (uc *UserController) Delete(c echo.Context) error {
 	token := c.Get("user").(*jwt.Token)
-	userID := utils.DecodeToken(token)
+	userID := uc.tu.DecodeToken(token)
 	if userID == 0 {
-		return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized,"Unauthorized", "error"))
+		return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 	}
 
 	if errDelete := uc.srv.DeleteAccount(uint(userID)); errDelete != nil {
@@ -150,4 +150,3 @@ func (uc *UserController) Delete(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.ResponseFormatNonData(http.StatusOK, "Succesfully deleted account", "Success"))
 }
-

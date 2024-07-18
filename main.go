@@ -11,5 +11,5 @@ func main() {
 
 	factory.InitFactory(e)
 
-	e.Logger.Error(e.Start(":8000"))
+	e.Logger.Fatal(e.Start(":8000"))
 }

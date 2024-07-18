@@ -1,12 +1,15 @@
 package helper
 
-func ResponseFormat(status string, code int, message string, data any) map[string]any {
+func ResponseFormat(status string, code int, message string, data any, meta any) map[string]any {
 	var result = make(map[string]any)
 	result["code"] = code
 	result["status"] = status
 	result["message"] = message
 	if data != nil {
 		result["data"] = data
+	}
+	if meta != nil {
+		result["meta"] = meta
 	}
 	return result
 }
