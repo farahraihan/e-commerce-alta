@@ -15,34 +15,17 @@ func InitRoute(e *echo.Echo, uc u_hnd.Handler, th t_hnd.THandler, dth dt_hnd.DTH
 	e.POST("/register", uc.Register())
 	e.POST("/login", uc.Login())
 
+	UsersRoute(e, uc)
 	TransactionsRoute(e, th, dth)
-	e.PUT("/users", uc.Update, echojwt.WithConfig(
-		echojwt.Config{
-			SigningKey:    []byte("passkeyJWT"),
-			SigningMethod: jwt.SigningMethodHS256.Name,
-		}))
-	e.GET("/users", uc.GetProfile, echojwt.WithConfig(
-		echojwt.Config{
-			SigningKey:    []byte("passkeyJWT"),
-			SigningMethod: jwt.SigningMethodHS256.Name,
-		}))
-	e.DELETE("/users", uc.Delete, echojwt.WithConfig(
-		echojwt.Config{
-			SigningKey:    []byte("passkeyJWT"),
-			SigningMethod: jwt.SigningMethodHS256.Name,
-		}))
-
 }
 
-// func setRoute(e *echo.Echo) {
-// 	t := e.Group("/users")
-// 	t.Use(echojwt.WithConfig(
-// 		echojwt.Config{
-// 			SigningKey:    []byte("passkeyJWT"),
-// 			SigningMethod: jwt.SigningMethodHS256.Name,
-// 		},
-// 	))
-// }
+func UsersRoute(e *echo.Echo, uc u_hnd.Handler) {
+	u := e.Group("/users")
+	u.Use(JWTConfig())
+	u.PUT("", uc.Update)
+	u.GET("", uc.GetProfile)
+	u.DELETE("", uc.Delete)
+}
 
 func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
 	c := e.Group("/cart")

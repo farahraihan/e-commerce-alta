@@ -28,10 +28,10 @@ func (dth *DetailTransactionHandler) GetAllCart(c echo.Context) error {
 
 	transaction, cart, err := dth.srv.GetAllCart(uint(userID))
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat("Failed!", 500, "Server Error!", nil, nil))
+		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat("Succeed!", 200, "Shopping Cart datas successfully retreived!", ToCartResponse(transaction, cart), nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed", 200, "Shopping Cart datas successfully retreived!", ToCartResponse(transaction, cart), nil))
 }
 
 func (dth *DetailTransactionHandler) AddToCart(c echo.Context) error {

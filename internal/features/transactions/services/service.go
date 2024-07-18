@@ -3,7 +3,6 @@ package services
 import (
 	t_entity "TokoGadget/internal/features/transactions"
 	"TokoGadget/internal/utils"
-	"strconv"
 )
 
 type TransactionServices struct {
@@ -18,30 +17,30 @@ func NewTransactionServices(q t_entity.TQuery, m utils.MidtransInterface) t_enti
 	}
 }
 
-func (ts *TransactionServices) Checkout(transactionID uint) (bool, bool, error) {
+func (ts *TransactionServices) Checkout(transactionID uint) (bool, error) {
 	// Check stock
 	result, status := ts.qry.CheckStock(transactionID)
 	if !status {
-		return false, false, nil
+		return false, nil
 	}
 
-	// Get Transaction Details
-	paymentDetails := ts.qry.GetPaymentDetails(transactionID)
+	// // Get Transaction Details
+	// paymentDetails := ts.qry.GetPaymentDetails(transactionID)
 
-	// Payment Gateway
-	_, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int64(paymentDetails.Ammount))
-	if err != nil {
-		return true, false, err
-	}
+	// // Payment Gateway
+	// _, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int64(paymentDetails.Ammount))
+	// if err != nil {
+	// 	return true, false, err
+	// }
 
 	// Update Product Stock After Payment Success
-	err = ts.qry.UpdateStock(result)
+	err := ts.qry.UpdateStock(result)
 	if err != nil {
-		return true, true, err
+		return true, err
 	}
 
 	// Update Transaction Status to True
-	return true, true, ts.qry.Checkout(transactionID)
+	return true, ts.qry.Checkout(transactionID)
 }
 
 func (ts *TransactionServices) GetAllTransactions(userID uint) ([]t_entity.Transaction, error) {

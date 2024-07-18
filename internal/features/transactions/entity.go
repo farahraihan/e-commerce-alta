@@ -7,12 +7,22 @@ import (
 )
 
 type Transaction struct {
-	ID        uint
-	UserID    uint
-	Status    string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt time.Time
+	ID               uint                    `json:"transaction_id"`
+	UserID           uint                    `json:"user_id"`
+	Status           string                  `json:"status"`
+	TransactionItems []AllDetailTransactions `json:"transaction_items"`
+	GrandTotal       uint64                  `json:"grand_total"`
+	CreatedAt        time.Time               `json:"created_at"`
+	UpdatedAt        time.Time               `json:"updated_at"`
+	DeletedAt        time.Time               `json:"deleted_at"`
+}
+
+type AllDetailTransactions struct {
+	CartID         uint   `json:"cart_id"`
+	ProductName    string `json:"product_name"`
+	ProductPicture string `json:"product_picture"`
+	Quantity       int    `json:"quantity"`
+	SubTotal       uint64 `json:"sub_total"`
 }
 
 type CheckStock struct {
@@ -36,7 +46,7 @@ type THandler interface {
 }
 
 type TServices interface {
-	Checkout(uint) (bool, bool, error)
+	Checkout(uint) (bool, error)
 	GetAllTransactions(uint) ([]Transaction, error)
 	GetTransaction(uint) (Transaction, error)
 	DeleteTransaction(uint) error
