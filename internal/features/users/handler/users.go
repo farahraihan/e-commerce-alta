@@ -24,7 +24,7 @@ func (uc *UserController) Register() echo.HandlerFunc {
 		err := c.Bind(&input)
 		if err != nil {
 			c.Logger().Error("register parse error:", err.Error())
-			return c.JSON(400, helper.ResponseFormat(400, "input error", nil))
+			return c.JSON(400, helper.ResponseFormat(400, "input error", nil, nil))
 		}
 
 		err = uc.srv.Register(ToModelUsers(input))
@@ -34,10 +34,10 @@ func (uc *UserController) Register() echo.HandlerFunc {
 			if strings.ContainsAny(err.Error(), "tidak valid") {
 				errCode = 400
 			}
-			return c.JSON(errCode, helper.ResponseFormat(errCode, err.Error(), nil))
+			return c.JSON(errCode, helper.ResponseFormat(errCode, err.Error(), nil, nil))
 		}
 
-		return c.JSON(201, helper.ResponseFormat(201, "success insert data", nil))
+		return c.JSON(201, helper.ResponseFormat(201, "success insert data", nil, nil))
 	}
 }
 
@@ -47,7 +47,7 @@ func (uc *UserController) Login() echo.HandlerFunc {
 		err := c.Bind(&input)
 		if err != nil {
 			c.Logger().Error("login parse error:", err.Error())
-			return c.JSON(400, helper.ResponseFormat(400, "input error", nil))
+			return c.JSON(400, helper.ResponseFormat(400, "input error", nil, nil))
 		}
 
 		result, token, err := uc.srv.Login(input.Email, input.Password)
@@ -57,9 +57,9 @@ func (uc *UserController) Login() echo.HandlerFunc {
 			if strings.ContainsAny(err.Error(), "tidak ditemukan") {
 				errCode = 400
 			}
-			return c.JSON(errCode, helper.ResponseFormat(errCode, err.Error(), nil))
+			return c.JSON(errCode, helper.ResponseFormat(errCode, err.Error(), nil, nil))
 		}
 
-		return c.JSON(200, helper.ResponseFormat(200, "success login", ToLoginReponse(result, token)))
+		return c.JSON(200, helper.ResponseFormat(200, "success login", ToLoginReponse(result, token), nil))
 	}
 }

@@ -27,6 +27,7 @@ func InitFactory(e *echo.Echo) {
 	db, _ := configs.ConnectDB(cfg)
 	db.AutoMigrate(&u_qry.User{}, &p_qry.Product{}, &t_qry.Transaction{}, &dt_qry.DetailTransaction{})
 
+	mu := utils.NewMidtransPayment("SB-Mid-server-cYM2or6TUkO8UHAjMzaWc7Zx")
 	pu := utils.NewPasswordUtility()
 	tu := utils.NewTokenUtility()
 
@@ -39,7 +40,7 @@ func InitFactory(e *echo.Echo) {
 	// pc := u_hnd.NewProdyctController(ps)
 
 	tq := t_qry.NewTransactionQuery(db)
-	ts := t_srv.NewTransactionServices(tq)
+	ts := t_srv.NewTransactionServices(tq, mu)
 	th := t_hnd.NewTransactionHandler(ts, tu)
 
 	dtq := dt_qry.NewDetailTransactionQuery(db)

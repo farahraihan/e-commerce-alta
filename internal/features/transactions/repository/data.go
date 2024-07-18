@@ -26,3 +26,8 @@ func ToEntityTransaction(input Transaction) t_entity.Transaction {
 		DeletedAt: input.DeletedAt.Time,
 	}
 }
+
+type CartSubTotals struct {
+	Price    uint64
+	Quantity uint64
+}

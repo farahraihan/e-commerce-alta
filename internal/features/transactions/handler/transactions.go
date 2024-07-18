@@ -26,46 +26,49 @@ func (th *TransactionHandler) Checkout(c echo.Context) error {
 	var orderID uint
 	err := c.Bind(&orderID)
 	if err != nil {
-		return c.JSON(400, helper.ResponseFormat(400, "Input Error!", nil))
+		return c.JSON(400, helper.ResponseFormat(400, "Input Error!", nil, nil))
 	}
 
-	status, err := th.srv.Checkout(orderID)
-	if !status {
-		return c.JSON(400, helper.ResponseFormat(400, "Not enough stock!", nil))
+	stockStatus, paymentStatus, err := th.srv.Checkout(orderID)
+	if !stockStatus {
+		return c.JSON(400, helper.ResponseFormat(400, "Not enough stock!", nil, nil))
+	}
+	if !paymentStatus {
+		return c.JSON(400, helper.ResponseFormat(400, "Payment failed!", nil, nil))
 	}
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil))
+		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat(201, "All item in the Shopping Cart has been successfully checked out!", nil))
+	return c.JSON(200, helper.ResponseFormat(201, "All item in the Shopping Cart has been successfully checked out!", nil, nil))
 }
 
 func (th *TransactionHandler) GetAllTransactions(c echo.Context) error {
 	userID := th.tu.DecodeToken(c.Get("user").(*jwt.Token))
 	result, err := th.srv.GetAllTransactions(userID)
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil))
+		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat(200, "All Transactions History successfully retreived!", result))
+	return c.JSON(200, helper.ResponseFormat(200, "All Transactions History successfully retreived!", result, nil))
 }
 
 func (th *TransactionHandler) GetTransaction(c echo.Context) error {
 	transactionID, _ := strconv.Atoi(c.Param("transaction_id"))
 	result, err := th.srv.GetTransaction(uint(transactionID))
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil))
+		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat(200, "Transaction History successfully retreived!", result))
+	return c.JSON(200, helper.ResponseFormat(200, "Transaction History successfully retreived!", result, nil))
 }
 
 func (th *TransactionHandler) DeleteTransaction(c echo.Context) error {
 	transactionID, _ := strconv.Atoi(c.Param("transaction_id"))
 	err := th.srv.DeleteTransaction(uint(transactionID))
 	if err != nil {
-		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil))
+		return c.JSON(500, helper.ResponseFormat(500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat(200, "Transaction successfully canceled!", nil))
+	return c.JSON(200, helper.ResponseFormat(200, "Transaction successfully canceled!", nil, nil))
 }

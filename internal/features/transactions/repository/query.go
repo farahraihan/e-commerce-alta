@@ -56,6 +56,27 @@ func (tq *TransactionQuery) CheckStock(transactionID uint) ([]transactions.Check
 	return stock, true
 }
 
+func (tq *TransactionQuery) GetPaymentDetails(transactionID uint) transactions.PaymentDetails {
+	// Get Fullname
+	var result transactions.PaymentDetails
+	query := tq.db.Raw("SELECT t.id AS transaction_id, p.fullname FROM transactions AS t JOIN users AS u ON t.user_id = u.id WHERE t.id = ?", transactionID)
+	query.Scan(&result)
+
+	// Get All Cart Data Subtotals
+	var AllCart []CartSubTotals
+	query2 := tq.db.Raw("SELECT p.price AS ammount, dt.quantity FROM detail_transactions AS dt JOIN products AS p ON dt.product_id = p.id WHERE transaction_id = ?", transactionID)
+	query2.Scan(&AllCart)
+
+	// Calculate Total Ammount
+	var ammount uint64
+	for _, val := range AllCart {
+		ammount += val.Price * val.Quantity
+	}
+	result.Ammount = ammount
+
+	return result
+}
+
 func (tq *TransactionQuery) UpdateStock(input []transactions.CheckStock) error {
 	for _, val := range input {
 		newStock := val.Stock - val.Quantity

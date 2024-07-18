@@ -22,6 +22,12 @@ type CheckStock struct {
 	Stock     uint
 }
 
+type PaymentDetails struct {
+	TransactionID uint
+	Fullname      uint
+	Ammount       uint64
+}
+
 type THandler interface {
 	Checkout(echo.Context) error
 	GetAllTransactions(echo.Context) error
@@ -30,7 +36,7 @@ type THandler interface {
 }
 
 type TServices interface {
-	Checkout(uint) (bool, error)
+	Checkout(uint) (bool, bool, error)
 	GetAllTransactions(uint) ([]Transaction, error)
 	GetTransaction(uint) (Transaction, error)
 	DeleteTransaction(uint) error
@@ -40,6 +46,7 @@ type TQuery interface {
 	CreateTransaction(uint) error
 	CheckPendingTransaction(uint) (Transaction, error)
 	CheckStock(uint) ([]CheckStock, bool)
+	GetPaymentDetails(uint) PaymentDetails
 	UpdateStock([]CheckStock) error
 	Checkout(uint) error
 	GetAllTransactions(uint) ([]Transaction, error)
