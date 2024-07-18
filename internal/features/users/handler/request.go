@@ -11,9 +11,9 @@ import (
 )
 
 type RegisterRequest struct {
-	Fullname string          `json:"fullname"`
-	Password string          `json:"password"`
-	Email    string          `json:"email"`
+	Fullname string `json:"fullname"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 func ToModelUsers(r RegisterRequest) users.User {

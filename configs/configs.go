@@ -17,6 +17,16 @@ type setting struct {
 	DBNAME   string
 }
 
+func ImportPasskey() string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return os.Getenv("passkey")
+}
+
 func ImportSetting() setting {
 	var result setting
 	err := godotenv.Load(".env")

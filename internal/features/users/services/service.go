@@ -14,18 +14,22 @@ import (
 
 type UserServices struct {
 	qry      users.Query
+	pu       utils.PasswordUtilityInterface
+	tu       utils.TokenUtilityInterface
 	validate *validator.Validate
 }
 
-func NewUserService(q users.Query) users.Services {
+func NewUserService(q users.Query, p utils.PasswordUtilityInterface, t utils.TokenUtilityInterface) users.Services {
 	return &UserServices{
 		qry:      q,
+		pu:       p,
+		tu:       t,
 		validate: validator.New(),
 	}
 }
 
 func (us *UserServices) Register(newData users.User) error {
-	processPw, err := utils.GeneratePassword(newData.Password)
+	processPw, err := us.pu.GeneratePassword(newData.Password)
 
 	if err != nil {
 		log.Println("register generate password error:", err.Error())
@@ -62,7 +66,7 @@ func (us *UserServices) Login(email string, password string) (users.User, string
 		return users.User{}, "", errors.New(msg)
 	}
 
-	err = utils.CheckPassword([]byte(password), []byte(result.Password))
+	err = us.pu.CheckPassword([]byte(password), []byte(result.Password))
 	if err != nil {
 		log.Println("login hash error:", err.Error())
 		if err.Error() == bcrypt.ErrMismatchedHashAndPassword.Error() {
@@ -71,7 +75,7 @@ func (us *UserServices) Login(email string, password string) (users.User, string
 		return users.User{}, "", errors.New(msg)
 	}
 
-	token, err := utils.GenerateToken(result.ID)
+	token, err := us.tu.GenerateToken(result.ID)
 	if err != nil {
 		log.Println("login jwt error:", err.Error())
 		if err.Error() == jwt.ErrTokenMalformed.Error() {
@@ -83,7 +87,6 @@ func (us *UserServices) Login(email string, password string) (users.User, string
 	return result, token, nil
 }
 
-
 // UpdateProfile implements users.ServiceUserInterface.
 func (us *UserServices) UpdateProfile(userid uint, accounts users.User) error {
 	if accounts.Fullname == "" || accounts.Email == "" || accounts.Password == "" || accounts.PhoneNumber == "" || accounts.Address == "" {
@@ -91,7 +94,7 @@ func (us *UserServices) UpdateProfile(userid uint, accounts users.User) error {
 	}
 
 	// proses hash password
-	pass, err := utils.GeneratePassword(accounts.Password)
+	pass, err := us.pu.GeneratePassword(accounts.Password)
 	if err != nil {
 		log.Println("register generate password error:", err.Error())
 		return errors.New("input data tidak valid, data tidak bisa diproses")
@@ -115,5 +118,3 @@ func (us *UserServices) DeleteAccount(userid uint) error {
 	}
 	return nil
 }
-
-
