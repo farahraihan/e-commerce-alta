@@ -13,11 +13,11 @@ import (
 )
 
 type UserServices struct {
-	qry      users.Query
+	qry      users.UserQuery
 	validate *validator.Validate
 }
 
-func NewUserService(q users.Query) users.Services {
+func NewUserService(q users.UserQuery) users.UserServices {
 	return &UserServices{
 		qry:      q,
 		validate: validator.New(),

@@ -10,7 +10,7 @@ type UserModel struct {
 	db *gorm.DB
 }
 
-func NewUserModel(connection *gorm.DB) users.Query {
+func NewUserModel(connection *gorm.DB) users.UserQuery {
 	return &UserModel{
 		db: connection,
 	}

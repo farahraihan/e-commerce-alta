@@ -14,7 +14,7 @@ type User struct {
 	ProfilePicture string
 }
 
-type Handler interface {
+type UserHandler interface {
 	Register() echo.HandlerFunc
 	Login() echo.HandlerFunc
 	Update(c echo.Context) error
@@ -22,7 +22,7 @@ type Handler interface {
 	Delete(c echo.Context) error 
 }
 
-type Services interface {
+type UserServices interface {
 	Register(newUser User) error
 	Login(email string, password string) (User, string, error)
 	UpdateProfile(userid uint, accounts User) error
@@ -30,7 +30,7 @@ type Services interface {
 	DeleteAccount(userid uint) error
 }
 
-type Query interface {
+type UserQuery interface {
 	Register(newUser User) error
 	Login(email string) (User, error)
 	UpdateAccount(userID uint, account User) error

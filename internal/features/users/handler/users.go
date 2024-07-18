@@ -12,10 +12,10 @@ import (
 )
 
 type UserController struct {
-	srv users.Services
+	srv users.UserServices
 }
 
-func NewUserController(s users.Services) users.Handler {
+func NewUserController(s users.UserServices) users.UserHandler {
 	return &UserController{
 		srv: s,
 	}

@@ -3,8 +3,10 @@ package factory
 import (
 	"TokoGadget/configs"
 	"net/http"
+	"os"
 
 	// users
+	payment "TokoGadget/internal/features/payment/handler"
 	"TokoGadget/internal/features/users/handler"
 	"TokoGadget/internal/features/users/repository"
 	"TokoGadget/internal/features/users/services"
@@ -34,7 +36,7 @@ func InitFactory(e *echo.Echo) {
 	um := repository.NewUserModel(db)
 	us := services.NewUserService(um)
 	uc := handler.NewUserController(us)
-
+	pc := payment.NewPaymentHandler(os.Getenv("midtranskey"))
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 
@@ -48,5 +50,5 @@ func InitFactory(e *echo.Echo) {
 		`)
 	})
 
-	routes.InitRoute(e, uc)
+	routes.InitRoute(e, uc, pc)
 }
