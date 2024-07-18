@@ -18,31 +18,65 @@ func NewTransactionServices(q t_entity.TQuery, m utils.MidtransInterface) t_enti
 	}
 }
 
-func (ts *TransactionServices) Checkout(transactionID uint) (bool, bool, error) {
-	// Check stock
-	result, status := ts.qry.CheckStock(transactionID)
-	if !status {
-		return false, false, nil
-	}
+// func (ts *TransactionServices) Checkout(transactionID uint) (bool, bool, error) {
+// 	// Check stock
+// 	result, status := ts.qry.CheckStock(transactionID)
+// 	if !status {
+// 		return false, false, nil
+// 	}
 
-	// Get Transaction Details
-	paymentDetails := ts.qry.GetPaymentDetails(transactionID)
+// 	// Get Transaction Details
+// 	paymentDetails := ts.qry.GetPaymentDetails(transactionID)
 
-	// Payment Gateway
-	_, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int64(paymentDetails.Ammount))
-	if err != nil {
-		return true, false, err
-	}
+// 	// Payment Gateway
+// 	_, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int(paymentDetails.Ammount))
+// 	if err != nil {
+// 		return true, false, err
+// 	}
 
-	// Update Product Stock After Payment Success
-	err = ts.qry.UpdateStock(result)
-	if err != nil {
-		return true, true, err
-	}
+// 	// Update Product Stock After Payment Success
+// 	err = ts.qry.UpdateStock(result)
+// 	if err != nil {
+// 		return true, true, err
+// 	}
 
-	// Update Transaction Status to True
-	return true, true, ts.qry.Checkout(transactionID)
+// 	// Update Transaction Status to True
+// 	return true, true, ts.qry.Checkout(transactionID)
+// }
+
+func (ts *TransactionServices) Checkout(transactionID uint) (string, bool, error) {
+    // Check stock
+    result, stockStatus := ts.qry.CheckStock(transactionID)
+    if !stockStatus {
+        return "", false, nil
+    }
+
+    // Get Transaction Details
+    paymentDetails := ts.qry.GetPaymentDetails(transactionID)
+
+    // Payment Gateway
+    redirectURL, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int(paymentDetails.Ammount))
+    if err != nil {
+        return "", false, err
+    }
+
+    // Update Product Stock After Payment Success
+    err = ts.qry.UpdateStock(result)
+    if err != nil {
+        return "", false, err
+    }
+
+    // Update Transaction Status to True
+    err = ts.qry.Checkout(transactionID)
+    if err != nil {
+        return "", false, err
+    }
+
+    // Return Redirect URL and success status
+    return redirectURL, true, nil
 }
+
+
 
 func (ts *TransactionServices) GetAllTransactions(userID uint) ([]t_entity.Transaction, error) {
 	return ts.qry.GetAllTransactions(userID)

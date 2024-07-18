@@ -36,7 +36,8 @@ type THandler interface {
 }
 
 type TServices interface {
-	Checkout(uint) (bool, bool, error)
+	// Checkout(uint) (bool, bool, error)
+	Checkout(transactionID uint) (string, bool, error)
 	GetAllTransactions(uint) ([]Transaction, error)
 	GetTransaction(uint) (Transaction, error)
 	DeleteTransaction(uint) error
