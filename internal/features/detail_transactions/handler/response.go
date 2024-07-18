@@ -26,7 +26,7 @@ type Meta struct {
 }
 
 func ToCartResponse(t t_entity.Transaction, dt []dt_entity.AllDetailTransactions) CartResponse {
-	// Hitung SubTotal dan GrandTotal
+	// Hitung Grand Total
 	var grandTotal uint64
 	for _, val := range dt {
 		grandTotal += val.SubTotal
