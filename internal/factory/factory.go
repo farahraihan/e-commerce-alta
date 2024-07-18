@@ -27,7 +27,7 @@ func InitFactory(e *echo.Echo) {
 	db, _ := configs.ConnectDB(cfg)
 	db.AutoMigrate(&u_qry.User{}, &p_qry.Product{}, &t_qry.Transaction{}, &dt_qry.DetailTransaction{})
 
-	mu := utils.NewMidtransPayment("SB-Mid-server-cYM2or6TUkO8UHAjMzaWc7Zx")
+	mu := utils.NewMidtransPayment(configs.ImportMidtransKey())
 	pu := utils.NewPasswordUtility()
 	tu := utils.NewTokenUtility()
 
@@ -49,16 +49,7 @@ func InitFactory(e *echo.Echo) {
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
-
-	// e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	// e.Use(middleware.Recover())
-	// e.Use(middleware.Logger())
-	// e.GET("/", func(c echo.Context) error {
-	// 	return c.HTML(http.StatusOK, `
-	// 		<h1>Welcome to Echo!</h1>
-	// 		<h3>TLS certificates automatically installed from Let's Encrypt :)</h3>
-	// 	`)
-	// })
+	e.Use(middleware.CORS())
 
 	routes.InitRoute(e, uc, th, dth)
 }

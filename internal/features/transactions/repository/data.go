@@ -27,6 +27,23 @@ func ToEntityTransaction(input Transaction) t_entity.Transaction {
 	}
 }
 
+func ToAllEntityTransaction(input []Transaction) []t_entity.Transaction {
+	var result []t_entity.Transaction
+
+	for _, val := range input {
+		result = append(result, t_entity.Transaction{
+			ID:        val.ID,
+			UserID:    val.UserID,
+			Status:    val.Status,
+			CreatedAt: val.CreatedAt,
+			UpdatedAt: val.UpdatedAt,
+			DeletedAt: val.DeletedAt.Time,
+		})
+	}
+
+	return result
+}
+
 type CartSubTotals struct {
 	Price    uint64
 	Quantity uint64

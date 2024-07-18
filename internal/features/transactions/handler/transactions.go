@@ -23,24 +23,19 @@ func NewTransactionHandler(s t_entity.TServices, t utils.TokenUtilityInterface) 
 }
 
 func (th *TransactionHandler) Checkout(c echo.Context) error {
-	var orderID uint
-	err := c.Bind(&orderID)
-	if err != nil {
-		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Input Error!", nil, nil))
-	}
-
-	stockStatus, paymentStatus, err := th.srv.Checkout(orderID)
+	transactionID, _ := strconv.Atoi(c.Param("transaction_id"))
+	stockStatus, err := th.srv.Checkout(uint(transactionID))
 	if !stockStatus {
 		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Not enough stock!", nil, nil))
 	}
-	if !paymentStatus {
-		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Payment failed!", nil, nil))
-	}
+	// if !paymentStatus {
+	// 	return c.JSON(400, helper.ResponseFormat("Failed", 400, "Payment failed!", nil, nil))
+	// }
 	if err != nil {
 		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat("Failed", 201, "All item in the Shopping Cart has been successfully checked out!", nil, nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed", 201, "All item in the Shopping Cart has been successfully checked out!", nil, nil))
 }
 
 func (th *TransactionHandler) GetAllTransactions(c echo.Context) error {
@@ -50,7 +45,7 @@ func (th *TransactionHandler) GetAllTransactions(c echo.Context) error {
 		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat("Failed", 200, "All Transactions History successfully retreived!", result, nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed", 200, "All Transactions History successfully retreived!", result, nil))
 }
 
 func (th *TransactionHandler) GetTransaction(c echo.Context) error {
@@ -60,7 +55,7 @@ func (th *TransactionHandler) GetTransaction(c echo.Context) error {
 		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat("Failed", 200, "Transaction History successfully retreived!", result, nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed", 200, "Transaction History successfully retreived!", result, nil))
 }
 
 func (th *TransactionHandler) DeleteTransaction(c echo.Context) error {
@@ -70,5 +65,5 @@ func (th *TransactionHandler) DeleteTransaction(c echo.Context) error {
 		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
 	}
 
-	return c.JSON(200, helper.ResponseFormat("Failed", 200, "Transaction successfully canceled!", nil, nil))
+	return c.JSON(200, helper.ResponseFormat("Succeed", 200, "Transaction successfully canceled!", nil, nil))
 }
