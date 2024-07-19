@@ -4,6 +4,7 @@ import (
 	"TokoGadget/configs"
 	"TokoGadget/internal/features/products"
 	"TokoGadget/internal/helper"
+	"TokoGadget/internal/utils"
 	"math"
 	"net/http"
 	"strconv"
@@ -15,19 +16,23 @@ import (
 
 type ProductController struct {
 	srv products.PServices
+	tu  utils.TokenUtilityInterface
 }
 
-func NewProductController(s products.PServices) products.PHandler {
+func NewProductController(s products.PServices, t utils.TokenUtilityInterface) products.PHandler {
 	return &ProductController{
 		srv: s,
+		tu:  t,
 	}
 }
 
 func (pc *ProductController) AddProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID := getUserIDFromToken(c) // Get user ID from token
+		token := c.Get("user").(*jwt.Token)
+		userID := pc.tu.DecodeToken(token)
+
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
 
 		// Get image from form data
@@ -100,9 +105,11 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 
 		search := c.QueryParam("search")
 
-		userID := getUserIDFromToken(c)
+		token := c.Get("user").(*jwt.Token)
+		userID := pc.tu.DecodeToken(token)
+
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
 
 		limit := 10
@@ -178,9 +185,11 @@ func (pc *ProductController) UpdateProductByID() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil, nil))
 		}
 
-		userID := getUserIDFromToken(c) // Get user ID from token
+		token := c.Get("user").(*jwt.Token)
+		userID := pc.tu.DecodeToken(token)
+
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
 
 		var req CreateOrUpdateProductRequest
@@ -207,9 +216,11 @@ func (pc *ProductController) DeleteProduct() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil, nil))
 		}
 
-		userID := getUserIDFromToken(c) // Get user ID from token
+		token := c.Get("user").(*jwt.Token)
+		userID := pc.tu.DecodeToken(token)
+
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
 
 		err = pc.srv.DeleteProduct(uint(id))
@@ -221,22 +232,17 @@ func (pc *ProductController) DeleteProduct() echo.HandlerFunc {
 	}
 }
 
-func getUserIDFromToken(c echo.Context) uint {
-	user := c.Get("user")
-	if user == nil {
-		return 0 // atau Anda bisa mengembalikan kesalahan yang lebih spesifik
-	}
+// fungsi untuk mendapatkan userID dari token
+// func getUserIDFromToken(c echo.Context, tu utils.TokenUtilityInterface) uint {
+// 	token := c.Get("user")
+// 	if token == nil {
+// 		return 0
+// 	}
 
-	token, ok := user.(*jwt.Token)
-	if !ok {
-		return 0 // atau Anda bisa mengembalikan kesalahan yang lebih spesifik
-	}
+// 	jwtToken, ok := token.(*jwt.Token)
+// 	if !ok {
+// 		return 0
+// 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return 0 // atau Anda bisa mengembalikan kesalahan yang lebih spesifik
-	}
-
-	userID := uint(claims["id"].(float64))
-	return userID
-}
+// 	return tu.DecodeToken(jwtToken)
+// }
