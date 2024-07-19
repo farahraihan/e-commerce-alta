@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/joho/godotenv"
+	//"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -18,30 +18,30 @@ type setting struct {
 }
 
 func ImportPasskey() string {
-	err := godotenv.Load(".env")
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
+	// err := godotenv.Load(".env")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return ""
+	// }
 
 	return os.Getenv("JWT_SECRET")
 }
 func ImportserverKey() string {
-	err := godotenv.Load(".env")
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
+	// err := godotenv.Load(".env")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return ""
+	// }
 
 	return os.Getenv("midtranskey")
 }
 
 func ImportSetting() setting {
 	var result setting
-	err := godotenv.Load(".env")
-	if err != nil {
-		return setting{}
-	}
+	// err := godotenv.Load(".env")
+	// if err != nil {
+	// 	return setting{}
+	// }
 	result.Host = os.Getenv("poshost")
 	result.User = os.Getenv("posuser")
 	result.Password = os.Getenv("pospw")
