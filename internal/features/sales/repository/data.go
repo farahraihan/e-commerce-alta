@@ -1,20 +1,19 @@
 package repository
 
 import (
+	detail_transaction "TokoGadget/internal/features/detail_transactions"
 	"TokoGadget/internal/features/products"
+	"TokoGadget/internal/features/transactions"
 	"TokoGadget/internal/features/users"
-
-	"gorm.io/gorm"
 )
 
 type Sales struct {
-	gorm.Model
-	SellerID  uint             `json:"seller_id"`
-	Seller    users.User       `gorm:"foreignKey:SellerID"`
-	BuyerID   uint             `json:"buyer_id"`
-	Buyer     users.User       `gorm:"foreignKey:BuyerID"`
-	ProductID uint             `json:"product_id"`
-	Product   products.Product `gorm:"foreignKey:ProductID"`
-	Quantity  int              `json:"quantity"`
-	Status    string           `json:"status"`
+	UserID              uint                                 `json:"seller_id"`
+	User                users.User                           `gorm:"foreignKey:SellerID"`
+	ProductID           uint                                 `json:"product_id"`
+	Product             products.Product                     `gorm:"foreignKey:ProductID"`
+	TransactionID       uint                                 `json:"transaction_id"`
+	Transaction         transactions.Transaction             `gorm:"foreignKey:TransactionID"`
+	DetailTransactionID uint                                 `json:"detail_transaction_id"`
+	DetailTransaction   detail_transaction.DetailTransaction `gorm:"foreignKey:DetailTransactionID"`
 }

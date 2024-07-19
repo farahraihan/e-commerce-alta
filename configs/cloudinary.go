@@ -1,4 +1,3 @@
-// configs/cloudinary.go
 package configs
 
 import (
@@ -8,11 +7,9 @@ import (
 )
 
 func ConnectCloudinary() (*cloudinary.Cloudinary, error) {
-	cld, err := cloudinary.NewFromParams(
-		os.Getenv("CLOUDINARY_CLOUD_NAME"),
-		os.Getenv("CLOUDINARY_API_KEY"),
-		os.Getenv("CLOUDINARY_API_SECRET"),
-	)
+	cloudinaryURL := os.Getenv("CLOUDINARY_URL")
+
+	cld, err := cloudinary.NewFromURL(cloudinaryURL)
 	if err != nil {
 		return nil, err
 	}
