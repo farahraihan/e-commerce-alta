@@ -7,7 +7,7 @@ import (
 	"TokoGadget/internal/features/users"
 )
 
-type Sales struct {
+type Sale struct {
 	UserID              uint                                 `json:"seller_id"`
 	User                users.User                           `gorm:"foreignKey:SellerID"`
 	ProductID           uint                                 `json:"product_id"`

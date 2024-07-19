@@ -15,7 +15,7 @@ type Transaction struct {
 	Status             string
 	Users              u_rep.User               `gorm:"foreignKey:UserID"`
 	DetailTransactions dt_rep.DetailTransaction `gorm:"foreignKey:TransactionID"`
-	sales              []sales.Sales            `gorm:"foreignKey:TransactionID"`
+	sales              []sales.Sale             `gorm:"foreignKey:TransactionID"`
 }
 
 func ToEntityTransaction(input Transaction) t_entity.Transaction {

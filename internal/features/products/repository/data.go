@@ -21,7 +21,7 @@ type Product struct {
 	ProductPicture     string                                 `json:"product_picture"`
 	DeletedAt          gorm.DeletedAt                         `gorm:"index"`
 	detailtransactions []detailtransactions.DetailTransaction `gorm:"foreignKey:ProductID"`
-	sales              []sales.Sales                          `gorm:"foreignKey:TransactionID"`
+	sales              []sales.Sale                           `gorm:"foreignKey:TransactionID"`
 }
 
 func (p *Product) ToProductEntity() products.Product {

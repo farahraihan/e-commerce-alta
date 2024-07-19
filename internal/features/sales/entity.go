@@ -9,24 +9,24 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Sales struct {
+type Sale struct {
 	UserID              uint
 	ProductID           uint
 	TransactionID       uint
 	DetailTransactionID uint
 }
 
-type PHandler interface {
+type SHandler interface {
 	GetSalesByUserID() echo.HandlerFunc
 	GetSalesByTransactionID() echo.HandlerFunc
 }
 
-type PServices interface {
-	GetSalesByUserID(UserID uint) (users.User, products.Product, transactions.Transaction, detail_transaction.DetailTransaction, error)
-	GetSalesByTransactionID(UserID uint, TransactionID uint) (users.User, products.Product, transactions.Transaction, detail_transaction.DetailTransaction, error)
+type SServices interface {
+	GetSalesByUserID(UserID uint) (users.User, []products.Product, []transactions.Transaction, []detail_transaction.DetailTransaction, error)
+	GetSalesByTransactionID(UserID uint, TransactionID uint) (users.User, []products.Product, transactions.Transaction, []detail_transaction.DetailTransaction, error)
 }
 
 type SQuery interface {
-	GetSalesByUserID(UserID uint) (users.User, products.Product, transactions.Transaction, detail_transaction.DetailTransaction, error)
-	GetSalesByTransactionID(UserID uint, TransactionID uint) (users.User, products.Product, transactions.Transaction, detail_transaction.DetailTransaction, error)
+	GetSalesByUserID(UserID uint) (users.User, []products.Product, []transactions.Transaction, []detail_transaction.DetailTransaction, error)
+	GetSalesByTransactionID(UserID uint, TransactionID uint) (users.User, []products.Product, transactions.Transaction, []detail_transaction.DetailTransaction, error)
 }

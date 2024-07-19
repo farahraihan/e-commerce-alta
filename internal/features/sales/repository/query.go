@@ -10,17 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type SalesModel struct {
+type SaleModel struct {
 	db *gorm.DB
 }
 
-func NewSalesModel(connection *gorm.DB) sales.SQuery {
-	return &SalesModel{
+func NewSaleModel(connection *gorm.DB) sales.SQuery {
+	return &SaleModel{
 		db: connection,
 	}
 }
 
-func (s *SalesModel) GetSalesByUserID(UserID uint) (users.User, []products.Product, []transactions.Transaction, []detail_transaction.DetailTransaction, error) {
+func (s *SaleModel) GetSalesByUserID(UserID uint) (users.User, []products.Product, []transactions.Transaction, []detail_transaction.DetailTransaction, error) {
 	var user users.User
 	var products []products.Product
 	var transactions []transactions.Transaction
@@ -31,12 +31,12 @@ func (s *SalesModel) GetSalesByUserID(UserID uint) (users.User, []products.Produ
 		return users.User{}, nil, nil, nil, err
 	}
 
-	// Ambil semua produk yang dijual oleh penjual
+	// Ambil semua produk yang dimiliki atau dijual oleh penjual
 	if err := s.db.Where("user_id = ?", UserID).Find(&products).Error; err != nil {
 		return users.User{}, nil, nil, nil, err
 	}
 
-	// Ambil detail transaksi yang terkait dengan produk-produk tersebut
+	// Ambil semua detail transaksi yang terkait dengan produk-produk tersebut
 	productIDs := make([]uint, len(products))
 	for i, product := range products {
 		productIDs[i] = product.ID
@@ -45,7 +45,7 @@ func (s *SalesModel) GetSalesByUserID(UserID uint) (users.User, []products.Produ
 		return users.User{}, nil, nil, nil, err
 	}
 
-	// Ambil transaksi yang terkait dengan detail transaksi tersebut
+	// Ambil semua transaksi yang terkait dengan detail transaksi tersebut
 	transactionIDs := make([]uint, len(detailTransactions))
 	for i, detailTransaction := range detailTransactions {
 		transactionIDs[i] = detailTransaction.TransactionID
@@ -57,36 +57,40 @@ func (s *SalesModel) GetSalesByUserID(UserID uint) (users.User, []products.Produ
 	return user, products, transactions, detailTransactions, nil
 }
 
-func (s *SalesModel) GetSalesByTransactionID(UserID uint, TransactionID uint) (users.User, products.Product, transactions.Transaction, detail_transaction.DetailTransaction, error) {
+func (s *SaleModel) GetSalesByTransactionID(UserID uint, TransactionID uint) (users.User, []products.Product, transactions.Transaction, []detail_transaction.DetailTransaction, error) {
 	var user users.User
-	var product products.Product
+	var products []products.Product
 	var transaction transactions.Transaction
-	var detailTransaction detail_transaction.DetailTransaction
+	var detailTransactions []detail_transaction.DetailTransaction
 
-	// Ambil produk berdasarkan TransactionID dan UserID
-	if err := s.db.Table("products").
-		Joins("JOIN detail_transactions ON products.id = detail_transactions.product_id").
-		Joins("JOIN transactions ON detail_transactions.transaction_id = transactions.id").
-		Where("products.user_id = ?", UserID).
-		Where("transactions.id = ?", TransactionID).
-		First(&product).Error; err != nil {
-		return users.User{}, products.Product{}, transactions.Transaction{}, detail_transaction.DetailTransaction{}, err
+	// Ambil pengguna (penjual) berdasarkan ID
+	if err := s.db.First(&user, UserID).Error; err != nil {
+		return users.User{}, nil, transactions.Transaction{}, nil, err
 	}
 
-	// Ambil detail transaksi berdasarkan TransactionID
-	if err := s.db.Where("transaction_id = ?", TransactionID).First(&detailTransaction).Error; err != nil {
-		return users.User{}, products.Product{}, transactions.Transaction{}, detail_transaction.DetailTransaction{}, err
+	// Ambil semua produk yang dimiliki oleh penjual
+	if err := s.db.Where("user_id = ?", UserID).Find(&products).Error; err != nil {
+		return users.User{}, nil, transactions.Transaction{}, nil, err
+	}
+
+	// Ambil semua detail transaksi berdasarkan produk-produk tersebut dan TransactionID
+	productIDs := make([]uint, len(products))
+	for i, product := range products {
+		productIDs[i] = product.ID
+	}
+	if err := s.db.Where("product_id IN (?) AND transaction_id = ?", productIDs, TransactionID).Find(&detailTransactions).Error; err != nil {
+		return users.User{}, nil, transactions.Transaction{}, nil, err
+	}
+
+	// Pastikan setidaknya ada satu detail transaksi yang ditemukan
+	if len(detailTransactions) == 0 {
+		return users.User{}, nil, transactions.Transaction{}, nil, gorm.ErrRecordNotFound
 	}
 
 	// Ambil transaksi berdasarkan TransactionID
 	if err := s.db.First(&transaction, TransactionID).Error; err != nil {
-		return users.User{}, products.Product{}, transactions.Transaction{}, detail_transaction.DetailTransaction{}, err
+		return users.User{}, nil, transactions.Transaction{}, nil, err
 	}
 
-	// Ambil pengguna (penjual) berdasarkan Product.UserID
-	if err := s.db.First(&user, product.UserID).Error; err != nil {
-		return users.User{}, products.Product{}, transactions.Transaction{}, detail_transaction.DetailTransaction{}, err
-	}
-
-	return user, product, transaction, detailTransaction, nil
+	return user, products, transaction, detailTransactions, nil
 }

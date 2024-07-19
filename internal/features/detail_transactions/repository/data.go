@@ -13,5 +13,5 @@ type DetailTransaction struct {
 	TransactionID uint
 	Quantity      uint
 	Product       products.Product `gorm:"foreignKey:ProductID"`
-	sales         []sales.Sales    `gorm:"foreignKey:TransactionID"`
+	sales         []sales.Sale     `gorm:"foreignKey:TransactionID"`
 }
