@@ -37,7 +37,7 @@ func InitFactory(e *echo.Echo) {
 
 	pm := p_qry.NewProductModel(db)
 	ps := p_srv.NewProductService(pm, um)
-	pc := p_hnd.NewProductController(ps)
+	pc := p_hnd.NewProductController(ps, tu)
 
 	tq := t_qry.NewTransactionQuery(db)
 	ts := t_srv.NewTransactionServices(tq, mu)
