@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/cloudinary/cloudinary-go v1.7.0
+	github.com/cloudinary/cloudinary-go/v2 v2.7.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
@@ -16,7 +17,6 @@ require (
 )
 
 require (
-	github.com/cloudinary/cloudinary-go/v2 v2.7.0 // indirect
 	github.com/creasty/defaults v1.5.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

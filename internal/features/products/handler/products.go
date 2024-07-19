@@ -28,9 +28,7 @@ func NewProductController(s products.PServices, t utils.TokenUtilityInterface) p
 
 func (pc *ProductController) AddProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		token := c.Get("user").(*jwt.Token)
-		userID := pc.tu.DecodeToken(token)
-
+		userID := pc.tu.DecodeToken(c.Get("user").(*jwt.Token))
 		if userID == 0 {
 			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
@@ -105,13 +103,6 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 
 		search := c.QueryParam("search")
 
-		token := c.Get("user").(*jwt.Token)
-		userID := pc.tu.DecodeToken(token)
-
-		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
-		}
-
 		limit := 10
 		offset := (page - 1) * limit
 
@@ -125,6 +116,11 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 			}
 			totalItems, err = pc.srv.CountAllProducts(search)
 		} else {
+			userID := pc.tu.DecodeToken(c.Get("user").(*jwt.Token))
+			if userID == 0 {
+				return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
+			}
+
 			products, err = pc.srv.GetProductsByUserID(userID, search, limit, offset)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil, nil))
@@ -185,9 +181,7 @@ func (pc *ProductController) UpdateProductByID() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil, nil))
 		}
 
-		token := c.Get("user").(*jwt.Token)
-		userID := pc.tu.DecodeToken(token)
-
+		userID := pc.tu.DecodeToken(c.Get("user").(*jwt.Token))
 		if userID == 0 {
 			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
@@ -216,9 +210,7 @@ func (pc *ProductController) DeleteProduct() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil, nil))
 		}
 
-		token := c.Get("user").(*jwt.Token)
-		userID := pc.tu.DecodeToken(token)
-
+		userID := pc.tu.DecodeToken(c.Get("user").(*jwt.Token))
 		if userID == 0 {
 			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
@@ -231,18 +223,3 @@ func (pc *ProductController) DeleteProduct() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Successfully deleted the product", nil, nil))
 	}
 }
-
-// fungsi untuk mendapatkan userID dari token
-// func getUserIDFromToken(c echo.Context, tu utils.TokenUtilityInterface) uint {
-// 	token := c.Get("user")
-// 	if token == nil {
-// 		return 0
-// 	}
-
-// 	jwtToken, ok := token.(*jwt.Token)
-// 	if !ok {
-// 		return 0
-// 	}
-
-// 	return tu.DecodeToken(jwtToken)
-// }
