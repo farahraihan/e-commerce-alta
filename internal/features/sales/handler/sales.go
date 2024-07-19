@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+package handler
+=======
 package handler
 
 import (
@@ -120,3 +123,4 @@ func (sc *SaleController) GetSalesByTransactionID() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, response)
 	}
 }
+>>>>>>> ac92ea727d51acfdfa4cfc2eff21fc1b5b948274
