@@ -34,7 +34,7 @@ type CheckStock struct {
 
 type PaymentDetails struct {
 	TransactionID uint
-	Fullname      uint
+	Fullname      string
 	Ammount       uint64
 }
 
@@ -43,10 +43,13 @@ type THandler interface {
 	GetAllTransactions(echo.Context) error
 	GetTransaction(echo.Context) error
 	DeleteTransaction(echo.Context) error
+	CheckStatusPayment(c echo.Context) error
 }
 
 type TServices interface {
-	Checkout(uint) (bool, error)
+	// Checkout(uint) (bool, bool, error)
+	RequestMidtransPayment(transactionID uint) (string, error)
+	Checkout(transactionID uint) (string, bool, error)
 	GetAllTransactions(uint) ([]Transaction, error)
 	GetTransaction(uint) (Transaction, error)
 	DeleteTransaction(uint) error

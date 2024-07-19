@@ -3,6 +3,8 @@ package services
 import (
 	t_entity "TokoGadget/internal/features/transactions"
 	"TokoGadget/internal/utils"
+	"fmt"
+	"strconv"
 )
 
 type TransactionServices struct {
@@ -17,31 +19,49 @@ func NewTransactionServices(q t_entity.TQuery, m utils.MidtransInterface) t_enti
 	}
 }
 
-func (ts *TransactionServices) Checkout(transactionID uint) (bool, error) {
+func (ts *TransactionServices) Checkout(transactionID uint) (string, bool, error) {
 	// Check stock
-	result, status := ts.qry.CheckStock(transactionID)
-	if !status {
-		return false, nil
+	result, stockStatus := ts.qry.CheckStock(transactionID)
+	if !stockStatus {
+		return "", false, nil
 	}
-
-	// // Get Transaction Details
-	// paymentDetails := ts.qry.GetPaymentDetails(transactionID)
-
-	// // Payment Gateway
-	// _, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int64(paymentDetails.Ammount))
-	// if err != nil {
-	// 	return true, false, err
-	// }
-
+	fmt.Println("berapa Stocknya :", result)
+	
 	// Update Product Stock After Payment Success
 	err := ts.qry.UpdateStock(result)
 	if err != nil {
-		return true, err
+		return "", false, err
 	}
 
 	// Update Transaction Status to True
-	return true, ts.qry.Checkout(transactionID)
+	err = ts.qry.Checkout(transactionID)
+	if err != nil {
+		return "", false, err
+	}
+
+	return "", true, nil
 }
+
+func (ts *TransactionServices) RequestMidtransPayment(transactionID uint) (string, error) {
+	// Get Transaction Details
+	paymentDetails := ts.qry.GetPaymentDetails(transactionID)
+	fmt.Println("DataPayment :", paymentDetails)
+	// Payment Gateway
+	
+	redirectURL, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int(paymentDetails.Ammount))
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	fmt.Println("Respon Eror : ", err)
+	fmt.Println("Url Service : ", redirectURL)
+
+	return redirectURL, nil
+}
+
+
+
+
 
 func (ts *TransactionServices) GetAllTransactions(userID uint) ([]t_entity.Transaction, error) {
 	return ts.qry.GetAllTransactions(userID)

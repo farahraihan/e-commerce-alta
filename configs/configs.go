@@ -26,15 +26,14 @@ func ImportPasskey() string {
 
 	return os.Getenv("JWT_SECRET")
 }
-
-func ImportMidtransKey() string {
+func ImportserverKey() string {
 	err := godotenv.Load(".env")
 	if err != nil {
 		fmt.Println(err)
 		return ""
 	}
 
-	return os.Getenv("midtrans")
+	return os.Getenv("midtranskey")
 }
 
 func ImportSetting() setting {
