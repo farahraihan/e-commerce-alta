@@ -3,6 +3,7 @@ package routes
 import (
 	"TokoGadget/configs"
 	dt_hnd "TokoGadget/internal/features/detail_transactions"
+	p_hnd "TokoGadget/internal/features/products"
 	t_hnd "TokoGadget/internal/features/transactions"
 	u_hnd "TokoGadget/internal/features/users"
 
@@ -11,12 +12,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func InitRoute(e *echo.Echo, uc u_hnd.Handler, th t_hnd.THandler, dth dt_hnd.DTHandler) {
+func InitRoute(e *echo.Echo, uc u_hnd.Handler, th t_hnd.THandler, dth dt_hnd.DTHandler, ph p_hnd.PHandler) {
 	e.POST("/register", uc.Register())
 	e.POST("/login", uc.Login())
 
 	UsersRoute(e, uc)
 	TransactionsRoute(e, th, dth)
+	ProductsRoute(e, ph)
 }
 
 func UsersRoute(e *echo.Echo, uc u_hnd.Handler) {
@@ -41,6 +43,15 @@ func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
 	t.PUT("/:transaction_id", th.Checkout)
 	t.GET("/:transaction_id", th.GetTransaction)
 	t.DELETE("/:transaction_id", th.DeleteTransaction)
+}
+
+func ProductsRoute(e *echo.Echo, ph p_hnd.PHandler) {
+	p := e.Group("/products")
+	p.GET("", ph.GetAllProducts())
+	p.GET("/:product_id", ph.GetProductByID())
+	p.POST("", ph.AddProduct())
+	p.PUT("/:product_id", ph.UpdateProductByID())
+	p.DELETE("/:product_id", ph.DeleteProduct())
 }
 
 func JWTConfig() echo.MiddlewareFunc {
