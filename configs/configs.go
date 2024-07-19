@@ -26,6 +26,15 @@ func ImportPasskey() string {
 
 	return os.Getenv("passkey")
 }
+func ImportserverKey() string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	return os.Getenv("midtranskey")
+}
 
 func ImportSetting() setting {
 	var result setting

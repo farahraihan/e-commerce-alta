@@ -4,6 +4,7 @@ import (
 	t_entity "TokoGadget/internal/features/transactions"
 	"TokoGadget/internal/helper"
 	"TokoGadget/internal/utils"
+	"fmt"
 	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,46 +22,68 @@ func NewTransactionHandler(s t_entity.TServices, t utils.TokenUtilityInterface) 
 		tu:  t,
 	}
 }
-
-// func (th *TransactionHandler) Checkout(c echo.Context) error {
-// 	var orderID uint
-// 	err := c.Bind(&orderID)
-// 	if err != nil {
-// 		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Input Error!", nil, nil))
-// 	}
-
-// 	stockStatus, paymentStatus, err := th.srv.Checkout(orderID)
-// 	if !stockStatus {
-// 		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Not enough stock!", nil, nil))
-// 	}
-// 	if !paymentStatus {
-// 		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Payment failed!", nil, nil))
-// 	}
-// 	if err != nil {
-// 		return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
-// 	}
-
-// 	return c.JSON(200, helper.ResponseFormat("Failed", 201, "All item in the Shopping Cart has been successfully checked out!", nil, nil))
-// }
 func (th *TransactionHandler) Checkout(c echo.Context) error {
-    var orderID uint
-    err := c.Bind(&orderID)
+    // Parse transaction_id from URL parameter
+    orderID, err := strconv.ParseUint(c.Param("transaction_id"), 10, 64)
     if err != nil {
         return c.JSON(400, helper.ResponseFormat("Failed", 400, "Input Error!", nil, nil))
     }
 
-    redirectURL, paymentStatus, err := th.srv.Checkout(orderID)
+    // Request Midtrans payment URL
+    redirectURL, err := th.srv.RequestMidtransPayment(uint(orderID))
     if err != nil {
-        return c.JSON(500, helper.ResponseFormat("Failed", 500, "Server Error!", nil, nil))
+        return c.JSON(500, helper.ResponseFormat("Failed", 500, err.Error(), nil, nil))
     }
 
-    if !paymentStatus {
-        return c.JSON(400, helper.ResponseFormat("Failed", 400, "Payment failed!", nil, nil))
+    if redirectURL == "" {
+        return c.JSON(500, helper.ResponseFormat("Failed", 500, "Empty redirect URL from Midtrans!", nil, nil))
     }
 
-    // Return success response with redirect URL
-    return c.JSON(200, helper.ResponseFormat("Success", 200, "Checkout successful!", map[string]string{"redirect_url": redirectURL}, nil))
+    // Prepare PaymentResponse struct
+    response := PaymentResponse{
+        RedirectURL: redirectURL,
+    }
+
+    // Return success response with PaymentResponse
+    return c.JSON(200, helper.ResponseFormat("Success", 200, "Checkout successful!", response, nil))
 }
+
+func (th *TransactionHandler) CheckStatusPayment(c echo.Context) error {
+	// Bind request body to TransactionStatusRequest struct
+	var req TransactionStatusRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Invalid request payload", nil, nil))
+	}
+	fmt.Println("Order ID :", req.OrderID)
+	orderID, err := strconv.ParseUint(req.OrderID, 10, 64)
+	if err != nil {
+		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Invalid Order ID", nil, nil))
+	}
+
+	if req.TransactionStatus != "settlement" {
+		return c.JSON(400, helper.ResponseFormatNonData(400, req.TransactionStatus, "Pembayaran belum selesai"))
+	}
+	// Checkout transaction after payment request
+	_, paymentStatus, err := th.srv.Checkout(uint(orderID))
+	if err != nil {
+		return c.JSON(500, helper.ResponseFormat("Failed", 500, err.Error(), nil, nil))
+	}
+
+	// // Check payment status
+	if !paymentStatus {
+		return c.JSON(400, helper.ResponseFormat("Failed", 400, "Payment failed!", nil, nil))
+	}
+
+	// Payment successful response
+	response := map[string]interface{}{
+		"transaction_time":   req.TransactionTime,
+		"transaction_status": req.TransactionStatus,
+		"transaction_id":     req.TransactionID,
+		"order_id":           req.OrderID,
+	}
+	return c.JSON(200, helper.ResponseFormat("success", 200, "Pembayaran Berhasil", response, nil))
+}
+
 
 
 func (th *TransactionHandler) GetAllTransactions(c echo.Context) error {

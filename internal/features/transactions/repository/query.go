@@ -3,6 +3,7 @@ package repository
 import (
 	p_qry "TokoGadget/internal/features/products/repository"
 	"TokoGadget/internal/features/transactions"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -43,7 +44,7 @@ func (tq *TransactionQuery) CheckPendingTransaction(userID uint) (transactions.T
 
 func (tq *TransactionQuery) CheckStock(transactionID uint) ([]transactions.CheckStock, bool) {
 	var stock []transactions.CheckStock
-	query := tq.db.Raw("SELECT dt.id AS cart_id, dt.quantity, p.stock FROM detail_transactions AS dt JOIN products AS p ON p.id = dt.product_id WHERE transaction_id = ?", transactionID)
+	query := tq.db.Raw("SELECT dt.id AS cart_id, dt.quantity, p.id AS product_id, p.stock FROM detail_transactions AS dt JOIN products AS p ON p.id = dt.product_id WHERE transaction_id = ?", transactionID)
 	query.Scan(&stock)
 
 	// Stok mencukupi = true, tidak cukup = false
@@ -56,31 +57,37 @@ func (tq *TransactionQuery) CheckStock(transactionID uint) ([]transactions.Check
 	return stock, true
 }
 
+
 func (tq *TransactionQuery) GetPaymentDetails(transactionID uint) transactions.PaymentDetails {
 	// Get Fullname
 	var result transactions.PaymentDetails
-	query := tq.db.Raw("SELECT t.id AS transaction_id, p.fullname FROM transactions AS t JOIN users AS u ON t.user_id = u.id WHERE t.id = ?", transactionID)
+	query := tq.db.Raw("SELECT t.id AS transaction_id, u.fullname FROM transactions AS t JOIN users AS u ON t.user_id = u.id WHERE t.id = ?", transactionID)
 	query.Scan(&result)
+	fmt.Println("Datanya : ", result)
 
 	// Get All Cart Data Subtotals
 	var AllCart []CartSubTotals
-	query2 := tq.db.Raw("SELECT p.price AS ammount, dt.quantity FROM detail_transactions AS dt JOIN products AS p ON dt.product_id = p.id WHERE transaction_id = ?", transactionID)
+	query2 := tq.db.Raw("SELECT p.price AS price, dt.quantity FROM detail_transactions AS dt JOIN products AS p ON dt.product_id = p.id WHERE transaction_id = ?", transactionID)
 	query2.Scan(&AllCart)
+	fmt.Println("Data Query :", AllCart)
 
-	// Calculate Total Ammount
-	var ammount uint64
+	// Calculate Total Amount
+	var amount uint64
 	for _, val := range AllCart {
-		ammount += val.Price * val.Quantity
+		amount += val.Price * val.Quantity
 	}
-	result.Ammount = ammount
-
+	result.Ammount = amount
+	fmt.Println("Data result sebelum return : ", result)
 	return result
 }
+
 
 func (tq *TransactionQuery) UpdateStock(input []transactions.CheckStock) error {
 	for _, val := range input {
 		newStock := val.Stock - val.Quantity
-		err := tq.db.Model(&p_qry.Product{}).Where("product_id = ?", val.ProductID).UpdateColumn("stock", newStock).Error
+		fmt.Println("Stock terbaru :", newStock)
+		fmt.Println("id produk :", val.ProductID)
+		err := tq.db.Model(&p_qry.Product{}).Where("id = ?", val.ProductID).UpdateColumn("stock", newStock).Error
 		if err != nil {
 			return err
 		}

@@ -33,17 +33,6 @@ func InitRoute(e *echo.Echo, uc u_hnd.Handler, th t_hnd.THandler, dth dt_hnd.DTH
 		}))
 
 }
-
-// func setRoute(e *echo.Echo) {
-// 	t := e.Group("/users")
-// 	t.Use(echojwt.WithConfig(
-// 		echojwt.Config{
-// 			SigningKey:    []byte("passkeyJWT"),
-// 			SigningMethod: jwt.SigningMethodHS256.Name,
-// 		},
-// 	))
-// }
-
 func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
 	c := e.Group("/cart")
 	c.Use(JWTConfig())
@@ -58,6 +47,7 @@ func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
 	t.PUT("/:transaction_id", th.Checkout)
 	t.GET("/:transaction_id", th.GetTransaction)
 	t.DELETE("/:transaction_id", th.DeleteTransaction)
+	e.POST("/midtrans_update", th.CheckStatusPayment)  //Midtrans Callback
 }
 
 func JWTConfig() echo.MiddlewareFunc {
