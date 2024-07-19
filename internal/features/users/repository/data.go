@@ -19,8 +19,7 @@ type User struct {
 	ProfilePicture string                     `json:"profile_picture"`
 	products       []products.Product         `gorm:"foreignKey:UserID"`
 	transactions   []transactions.Transaction `gorm:"foreignKey:UserID"`
-	sellers        []sales.Sales              `gorm:"foreignKey:SellerID"`
-	buyers         []sales.Sales              `gorm:"foreignKey:BuyerID"`
+	sales          []sales.Sale               `gorm:"foreignKey:UserID"`
 }
 
 func (u *User) toUserEntity() users.User {
@@ -37,8 +36,8 @@ func (u *User) toUserEntity() users.User {
 
 func toUserRegis(input users.User) User {
 	return User{
-		Fullname:   input.Fullname,
-		Email:    	input.Email,
-		Password: 	input.Password,
+		Fullname: input.Fullname,
+		Email:    input.Email,
+		Password: input.Password,
 	}
 }
