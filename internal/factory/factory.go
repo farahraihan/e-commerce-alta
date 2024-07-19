@@ -15,6 +15,10 @@ import (
 	p_hnd "TokoGadget/internal/features/products/handler"
 	p_qry "TokoGadget/internal/features/products/repository"
 	p_srv "TokoGadget/internal/features/products/services"
+	s_hnd "TokoGadget/internal/features/sales/handler"
+	s_qry "TokoGadget/internal/features/sales/repository"
+	s_srv "TokoGadget/internal/features/sales/services"
+
 	"TokoGadget/internal/routes"
 	"TokoGadget/internal/utils"
 
@@ -39,6 +43,10 @@ func InitFactory(e *echo.Echo) {
 	ps := p_srv.NewProductService(pm, um)
 	pc := p_hnd.NewProductController(ps, tu)
 
+	sm := s_qry.NewSaleModel(db)
+	ss := s_srv.NewSaleService(sm)
+	sc := s_hnd.NewSaleController(ss, tu)
+
 	tq := t_qry.NewTransactionQuery(db)
 	ts := t_srv.NewTransactionServices(tq, mu)
 	th := t_hnd.NewTransactionHandler(ts, tu)
@@ -52,5 +60,5 @@ func InitFactory(e *echo.Echo) {
 	e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
 
-	routes.InitRoute(e, uc, th, dth, pc)
+	routes.InitRoute(e, uc, th, dth, pc, sc)
 }

@@ -5,10 +5,12 @@ package handler
 
 import (
 	"TokoGadget/internal/features/sales"
+	"TokoGadget/internal/helper"
 	"TokoGadget/internal/utils"
 	"net/http"
 	"strconv"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,7 +28,7 @@ func NewSaleController(s sales.SServices, t utils.TokenUtilityInterface) sales.S
 
 func (sc *SaleController) GetSalesByUserID() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := strconv.ParseUint(c.Param("userID"), 10, 64)
+		userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 		if err != nil {
 			return c.String(http.StatusBadRequest, "Invalid UserID")
 		}
@@ -79,12 +81,12 @@ func (sc *SaleController) GetSalesByUserID() echo.HandlerFunc {
 
 func (sc *SaleController) GetSalesByTransactionID() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := strconv.ParseUint(c.Param("userID"), 10, 64)
-		if err != nil {
-			return c.String(http.StatusBadRequest, "Invalid UserID")
+		userID := sc.tu.DecodeToken(c.Get("user").(*jwt.Token))
+		if userID == 0 {
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
 
-		transactionID, err := strconv.ParseUint(c.Param("transactionID"), 10, 64)
+		transactionID, err := strconv.ParseUint(c.Param("sales_id"), 10, 64)
 		if err != nil {
 			return c.String(http.StatusBadRequest, "Invalid TransactionID")
 		}
