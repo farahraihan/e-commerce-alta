@@ -26,7 +26,7 @@ func (ts *TransactionServices) Checkout(transactionID uint) (string, bool, error
 		return "", false, nil
 	}
 	fmt.Println("berapa Stocknya :", result)
-	
+
 	// Update Product Stock After Payment Success
 	err := ts.qry.UpdateStock(result)
 	if err != nil {
@@ -47,7 +47,7 @@ func (ts *TransactionServices) RequestMidtransPayment(transactionID uint) (strin
 	paymentDetails := ts.qry.GetPaymentDetails(transactionID)
 	fmt.Println("DataPayment :", paymentDetails)
 	// Payment Gateway
-	
+
 	redirectURL, err := ts.mi.RequestPayment(strconv.Itoa(int(transactionID)), int(paymentDetails.Ammount))
 	// if err != nil {
 	// 	return "", err
@@ -58,10 +58,6 @@ func (ts *TransactionServices) RequestMidtransPayment(transactionID uint) (strin
 
 	return redirectURL, nil
 }
-
-
-
-
 
 func (ts *TransactionServices) GetAllTransactions(userID uint) ([]t_entity.Transaction, error) {
 	return ts.qry.GetAllTransactions(userID)
