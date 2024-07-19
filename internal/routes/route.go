@@ -43,15 +43,16 @@ func TransactionsRoute(e *echo.Echo, th t_hnd.THandler, dth dt_hnd.DTHandler) {
 	t.PUT("/:transaction_id", th.Checkout)
 	t.GET("/:transaction_id", th.GetTransaction)
 	t.DELETE("/:transaction_id", th.DeleteTransaction)
+	e.POST("/midtrans_update", th.CheckStatusPayment)  //Midtrans Callback
 }
 
 func ProductsRoute(e *echo.Echo, ph p_hnd.PHandler) {
 	p := e.Group("/products")
 	p.GET("", ph.GetAllProducts())
 	p.GET("/:product_id", ph.GetProductByID())
-	p.POST("", ph.AddProduct())
-	p.PUT("/:product_id", ph.UpdateProductByID())
-	p.DELETE("/:product_id", ph.DeleteProduct())
+	p.POST("", ph.AddProduct(), JWTConfig())
+	p.PUT("/:product_id", ph.UpdateProductByID(),JWTConfig())
+	p.DELETE("/:product_id", ph.DeleteProduct(), JWTConfig())
 }
 
 func JWTConfig() echo.MiddlewareFunc {

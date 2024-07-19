@@ -4,6 +4,7 @@ import (
 	"TokoGadget/internal/features/users"
 	"TokoGadget/internal/helper"
 	"TokoGadget/internal/utils"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -31,7 +32,7 @@ func (uc *UserController) Register() echo.HandlerFunc {
 			c.Logger().Error("register parse error:", err.Error())
 			return c.JSON(400, helper.ResponseFormatNonData(400, "input error", "error"))
 		}
-
+		fmt.Println(ToModelUsers(input))
 		err = uc.srv.Register(ToModelUsers(input))
 
 		if err != nil {

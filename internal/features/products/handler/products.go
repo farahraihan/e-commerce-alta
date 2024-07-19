@@ -5,6 +5,7 @@ import (
 	"TokoGadget/internal/features/products"
 	"TokoGadget/internal/helper"
 	"TokoGadget/internal/utils"
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -32,6 +33,7 @@ func (pc *ProductController) AddProduct() echo.HandlerFunc {
 		if userID == 0 {
 			return c.JSON(http.StatusUnauthorized, helper.ResponseFormatNonData(http.StatusUnauthorized, "Unauthorized", "error"))
 		}
+		fmt.Println("Ini Depe User Gaes :", userID)
 
 		// Get image from form data
 		image, err := c.FormFile("product_picture")
@@ -41,6 +43,7 @@ func (pc *ProductController) AddProduct() echo.HandlerFunc {
 
 		// Open the image file
 		src, err := image.Open()
+		
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to open image file", nil, nil))
 		}
@@ -51,7 +54,7 @@ func (pc *ProductController) AddProduct() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Cloudinary configuration error", nil, nil))
 		}
-
+		fmt.Println("URL_IMAGE:", src)
 		uploadResult, err := cld.Upload.Upload(c.Request().Context(), src, uploader.UploadParams{})
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to upload image", nil, nil))
