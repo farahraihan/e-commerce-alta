@@ -3,6 +3,7 @@ package repository
 import (
 	detailtransactions "TokoGadget/internal/features/detail_transactions"
 	"TokoGadget/internal/features/products"
+	"TokoGadget/internal/features/sales"
 	"TokoGadget/internal/features/users"
 
 	"gorm.io/gorm"
@@ -20,6 +21,7 @@ type Product struct {
 	ProductPicture     string                                 `json:"product_picture"`
 	DeletedAt          gorm.DeletedAt                         `gorm:"index"`
 	detailtransactions []detailtransactions.DetailTransaction `gorm:"foreignKey:ProductID"`
+	sales              []sales.Sale                           `gorm:"foreignKey:TransactionID"`
 }
 
 func (p *Product) ToProductEntity() products.Product {

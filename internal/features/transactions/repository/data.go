@@ -2,6 +2,7 @@ package repository
 
 import (
 	dt_rep "TokoGadget/internal/features/detail_transactions/repository"
+	"TokoGadget/internal/features/sales"
 	t_entity "TokoGadget/internal/features/transactions"
 	u_rep "TokoGadget/internal/features/users/repository"
 
@@ -14,6 +15,7 @@ type Transaction struct {
 	Status             string
 	Users              u_rep.User               `gorm:"foreignKey:UserID"`
 	DetailTransactions dt_rep.DetailTransaction `gorm:"foreignKey:TransactionID"`
+	sales              []sales.Sale             `gorm:"foreignKey:TransactionID"`
 }
 
 func ToEntityTransaction(input Transaction) t_entity.Transaction {
