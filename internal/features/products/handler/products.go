@@ -27,31 +27,31 @@ func (pc *ProductController) AddProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID := getUserIDFromToken(c) // Get user ID from token
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
 		}
 
 		// Get image from form data
 		image, err := c.FormFile("product_picture")
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid image file", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid image file", nil, nil))
 		}
 
 		// Open the image file
 		src, err := image.Open()
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to open image file", nil))
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to open image file", nil, nil))
 		}
 		defer src.Close()
 
 		// Upload image to Cloudinary
 		cld, err := configs.ConnectCloudinary()
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Cloudinary configuration error", nil))
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Cloudinary configuration error", nil, nil))
 		}
 
 		uploadResult, err := cld.Upload.Upload(c.Request().Context(), src, uploader.UploadParams{})
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to upload image", nil))
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFormat("failed", http.StatusInternalServerError, "Failed to upload image", nil, nil))
 		}
 
 		imageURL := uploadResult.SecureURL
@@ -60,7 +60,7 @@ func (pc *ProductController) AddProduct() echo.HandlerFunc {
 		var req CreateOrUpdateProductRequest
 		err = c.Bind(&req)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid request body", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid request body", nil, nil))
 		}
 
 		// Convert request to product model
@@ -77,10 +77,10 @@ func (pc *ProductController) AddProduct() echo.HandlerFunc {
 		// Add product to database
 		err = pc.srv.AddProduct(newProduct)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to add product", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to add product", nil, nil))
 		}
 
-		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Product was successfully created", nil))
+		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Product was successfully created", nil, nil))
 	}
 }
 
@@ -102,7 +102,7 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 
 		userID := getUserIDFromToken(c)
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
 		}
 
 		limit := 10
@@ -114,18 +114,18 @@ func (pc *ProductController) GetAllProducts() echo.HandlerFunc {
 		if all {
 			products, err = pc.srv.GetAllProducts(search, limit, offset)
 			if err != nil {
-				return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil))
+				return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil, nil))
 			}
 			totalItems, err = pc.srv.CountAllProducts(search)
 		} else {
 			products, err = pc.srv.GetProductsByUserID(userID, search, limit, offset)
 			if err != nil {
-				return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil))
+				return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil, nil))
 			}
 			totalItems, err = pc.srv.CountProductsByUserID(userID, search)
 		}
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve total product count", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve total product count", nil, nil))
 		}
 
 		// Konversi ke response format yang diinginkan
@@ -151,12 +151,12 @@ func (pc *ProductController) GetProductByID() echo.HandlerFunc {
 
 		id, err := strconv.ParseUint(productID, 10, 64)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil, nil))
 		}
 
 		product, user, err := pc.srv.GetProductByID(uint(id))
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to retrieve product data", nil, nil))
 		}
 
 		response := map[string]interface{}{
@@ -165,7 +165,7 @@ func (pc *ProductController) GetProductByID() echo.HandlerFunc {
 			"sellerName": user.Fullname,
 		}
 
-		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Product data fetched successfully", response))
+		return c.JSON(http.StatusOK, helper.ResponseFormatWithMeta("success", http.StatusOK, "Product data fetched successfully", response, nil))
 	}
 }
 
@@ -175,26 +175,26 @@ func (pc *ProductController) UpdateProductByID() echo.HandlerFunc {
 
 		id, err := strconv.ParseUint(productID, 10, 64)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil, nil))
 		}
 
 		userID := getUserIDFromToken(c) // Get user ID from token
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
 		}
 
 		var req CreateOrUpdateProductRequest
 		if err := c.Bind(&req); err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid request body", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid request body", nil, nil))
 		}
 
 		updatedProduct := ToModelProduct(req, userID)
 		err = pc.srv.UpdateProductByID(uint(id), updatedProduct)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to update the product", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to update the product", nil, nil))
 		}
 
-		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Successfully updated the product", nil))
+		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Successfully updated the product", nil, nil))
 	}
 }
 
@@ -204,26 +204,39 @@ func (pc *ProductController) DeleteProduct() echo.HandlerFunc {
 
 		id, err := strconv.ParseUint(productID, 10, 64)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Invalid product ID", nil, nil))
 		}
 
 		userID := getUserIDFromToken(c) // Get user ID from token
 		if userID == 0 {
-			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil))
+			return c.JSON(http.StatusUnauthorized, helper.ResponseFormat("failed", http.StatusUnauthorized, "Unauthorized access", nil, nil))
 		}
 
 		err = pc.srv.DeleteProduct(uint(id))
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to delete the product", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat("failed", http.StatusBadRequest, "Failed to delete the product", nil, nil))
 		}
 
-		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Successfully deleted the product", nil))
+		return c.JSON(http.StatusOK, helper.ResponseFormat("success", http.StatusOK, "Successfully deleted the product", nil, nil))
 	}
 }
 
 func getUserIDFromToken(c echo.Context) uint {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
+	user := c.Get("user")
+	if user == nil {
+		return 0 // atau Anda bisa mengembalikan kesalahan yang lebih spesifik
+	}
+
+	token, ok := user.(*jwt.Token)
+	if !ok {
+		return 0 // atau Anda bisa mengembalikan kesalahan yang lebih spesifik
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return 0 // atau Anda bisa mengembalikan kesalahan yang lebih spesifik
+	}
+
 	userID := uint(claims["id"].(float64))
 	return userID
 }

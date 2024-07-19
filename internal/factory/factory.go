@@ -50,6 +50,7 @@ func InitFactory(e *echo.Echo) {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
+	e.Use(middleware.Recover())
 
 	routes.InitRoute(e, uc, th, dth, pc)
 }
